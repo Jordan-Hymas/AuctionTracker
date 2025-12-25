@@ -1,0 +1,101 @@
+import axios from 'axios';
+import { Bid, NewBid, BidStats } from '../types/bid';
+import { Settings, UpdateSettings } from '../types/settings';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// ==================== BID API ====================
+
+export const bidApi = {
+  getAll: async (): Promise<Bid[]> => {
+    const response = await api.get('/bids');
+    return response.data.bids;
+  },
+
+  getRecent: async (limit: number = 10): Promise<Bid[]> => {
+    const response = await api.get(`/bids/recent?limit=${limit}`);
+    return response.data.bids;
+  },
+
+  getStats: async (): Promise<BidStats> => {
+    const response = await api.get('/bids/total');
+    return response.data;
+  },
+
+  create: async (newBid: NewBid): Promise<{ bid: Bid; currentTotal: number; totalBids: number }> => {
+    const response = await api.post('/bids', newBid);
+    return response.data;
+  },
+
+  undoLast: async (): Promise<{ removedBid: Bid | null; newTotal: number; totalBids: number }> => {
+    const response = await api.delete('/bids/last');
+    return response.data;
+  },
+};
+
+// ==================== SETTINGS API ====================
+
+export const settingsApi = {
+  get: async (): Promise<Settings> => {
+    const response = await api.get('/settings');
+    return response.data.settings;
+  },
+
+  update: async (updates: UpdateSettings): Promise<Settings> => {
+    const response = await api.put('/settings', updates);
+    return response.data.settings;
+  },
+};
+
+// ==================== UPLOAD API ====================
+
+export const uploadApi = {
+  uploadLogo: async (file: File): Promise<{ logoUrl: string }> => {
+    const formData = new FormData();
+    formData.append('logo', file);
+
+    const response = await api.post('/upload/logo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteLogo: async (): Promise<void> => {
+    await api.delete('/upload/logo');
+  },
+};
+
+// ==================== EXPORT API ====================
+
+export const exportApi = {
+  downloadCSV: async (): Promise<Blob> => {
+    const response = await api.get('/export/csv', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+};
+
+// ==================== ADMIN API ====================
+
+export const adminApi = {
+  reset: async (): Promise<void> => {
+    await api.post('/admin/reset', { confirm: true });
+  },
+
+  health: async (): Promise<{ status: string; timestamp: string }> => {
+    const response = await api.get('/health');
+    return response.data;
+  },
+};
+
+export default api;
