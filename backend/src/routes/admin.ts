@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { resetAllData } from '../database/queries';
 import { broadcastSettingsUpdated } from '../websocket';
 import { SettingsService } from '../services/SettingsService';
+import os from 'os';
 
 const router = Router();
 
@@ -10,6 +11,29 @@ router.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
+  });
+});
+
+// GET /api/v1/server-info - Get server network information
+router.get('/server-info', (req: Request, res: Response) => {
+  const networkInterfaces = os.networkInterfaces();
+  const addresses: string[] = [];
+
+  // Get all IPv4 addresses that are not internal (localhost)
+  for (const interfaceName in networkInterfaces) {
+    const iface = networkInterfaces[interfaceName];
+    if (iface) {
+      for (const alias of iface) {
+        if (alias.family === 'IPv4' && !alias.internal) {
+          addresses.push(alias.address);
+        }
+      }
+    }
+  }
+
+  res.status(200).json({
+    ipAddresses: addresses,
+    port: process.env.PORT || 3001,
   });
 });
 

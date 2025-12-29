@@ -102,6 +102,7 @@ export default function MoneyGrowthBar({
             boxShadow: showPulse
               ? `0 0 30px ${primaryColor}, 0 0 60px ${primaryColor}`
               : `0 0 15px ${primaryColor}`,
+            overflow: 'hidden',
           }}
         >
           {/* Animated Shine Effect */}
@@ -114,7 +115,7 @@ export default function MoneyGrowthBar({
                 width: '100%',
                 height: '100%',
                 background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-                animation: 'shineProgress 2.5s linear infinite',
+                animation: 'shineProgress 3s ease-in-out infinite',
               }}
             />
           )}
@@ -191,8 +192,11 @@ export default function MoneyGrowthBar({
             0% {
               transform: translateX(-100%);
             }
+            50% {
+              transform: translateX(0%);
+            }
             100% {
-              transform: translateX(100%);
+              transform: translateX(-100%);
             }
           }
         `}

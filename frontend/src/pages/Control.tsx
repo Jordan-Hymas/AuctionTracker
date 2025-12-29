@@ -7,9 +7,25 @@ import ExportButton from '../components/control/ExportButton';
 import ResetButton from '../components/control/ResetButton';
 import CurrentLevelSelector from '../components/control/CurrentLevelSelector';
 import DonationLevelsPanel from '../components/control/DonationLevelsPanel';
+import { adminApi } from '../services/api';
+import { useState, useEffect } from 'react';
 
 export default function Control() {
   const { currentTotal, goalAmount, startingTotal, isConnected, isLoading } = useAuction();
+  const [serverInfo, setServerInfo] = useState<{ ipAddresses: string[]; port: number } | null>(null);
+
+  useEffect(() => {
+    const fetchServerInfo = async () => {
+      try {
+        const info = await adminApi.getServerInfo();
+        setServerInfo(info);
+      } catch (error) {
+        console.error('Failed to fetch server info:', error);
+      }
+    };
+
+    fetchServerInfo();
+  }, []);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -46,18 +62,25 @@ export default function Control() {
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h1 style={{ fontSize: '2rem', fontWeight: '700', color: '#111827' }}>Control Panel</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: isConnected ? '#10b981' : '#ef4444',
-                }}
-              />
-              <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {serverInfo && serverInfo.ipAddresses.length > 0 && (
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                  Server: {serverInfo.ipAddresses[0]}:{serverInfo.port}
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: isConnected ? '#10b981' : '#ef4444',
+                  }}
+                />
+                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                  {isConnected ? 'Connected' : 'Disconnected'}
+                </span>
+              </div>
             </div>
           </div>
 

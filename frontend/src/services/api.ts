@@ -96,6 +96,11 @@ export const adminApi = {
     const response = await api.get('/health');
     return response.data;
   },
+
+  getServerInfo: async (): Promise<{ ipAddresses: string[]; port: number }> => {
+    const response = await api.get('/server-info');
+    return response.data;
+  },
 };
 
 export default api;

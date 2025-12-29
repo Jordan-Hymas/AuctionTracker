@@ -20,22 +20,22 @@ export default function TotalDisplay({ total, label = 'Total Raised', color = '#
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+    <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
       <div
         style={{
-          fontSize: 'clamp(1rem, 3vw, 1.5rem)',
+          fontSize: 'clamp(1.5rem, 4vw, 3rem)',
           fontWeight: '600',
           color: labelColor || '#6b7280',
-          marginBottom: '0.5rem',
+          marginBottom: '1rem',
           textTransform: 'uppercase',
-          letterSpacing: '0.1em',
+          letterSpacing: '0.15em',
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: 'clamp(2.5rem, 10vw, 8rem)',
+          fontSize: 'clamp(4rem, 15vw, 14rem)',
           fontWeight: '900',
           color: color,
           lineHeight: '1',

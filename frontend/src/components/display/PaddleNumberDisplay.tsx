@@ -45,7 +45,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
       >
         <div
           style={{
-            fontSize: 'clamp(2rem, 5vw, 4rem)',
+            fontSize: 'clamp(3rem, 7vw, 6rem)',
             fontWeight: '700',
             color: 'rgba(255, 255, 255, 0.3)',
             textAlign: 'center',
@@ -90,11 +90,11 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
       {/* "PADDLE" Label */}
       <div
         style={{
-          fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+          fontSize: 'clamp(2rem, 5vw, 4rem)',
           fontWeight: '800',
           color: 'rgba(255, 255, 255, 0.9)',
           letterSpacing: '0.3em',
-          marginBottom: '1rem',
+          marginBottom: '2rem',
           textTransform: 'uppercase',
           textShadow: '0 0 20px rgba(59, 130, 246, 0.8)',
           animation: isNew ? 'slideInLeft 0.5s ease-out' : 'none',
@@ -106,7 +106,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
       {/* Paddle Number */}
       <div
         style={{
-          fontSize: 'clamp(8rem, 20vw, 18rem)',
+          fontSize: 'clamp(10rem, 25vw, 24rem)',
           fontWeight: '900',
           color: '#ffffff',
           lineHeight: '1',
@@ -127,8 +127,8 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
       {currentDonationLevel !== null && (
         <div
           style={{
-            marginTop: '2rem',
-            fontSize: 'clamp(3rem, 8vw, 6rem)',
+            marginTop: '3rem',
+            fontSize: 'clamp(4rem, 10vw, 8rem)',
             fontWeight: '800',
             color: '#fbbf24',
             textShadow: `

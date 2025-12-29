@@ -15,22 +15,22 @@ export default function GoalDisplay({ goalAmount, color = '#10b981', labelColor 
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+    <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
       <div
         style={{
-          fontSize: 'clamp(0.875rem, 2vw, 1.25rem)',
+          fontSize: 'clamp(1.25rem, 3vw, 2.5rem)',
           fontWeight: '600',
           color: labelColor || '#9ca3af',
-          marginBottom: '0.25rem',
+          marginBottom: '0.75rem',
           textTransform: 'uppercase',
-          letterSpacing: '0.1em',
+          letterSpacing: '0.15em',
         }}
       >
         Goal
       </div>
       <div
         style={{
-          fontSize: 'clamp(1.5rem, 4vw, 3rem)',
+          fontSize: 'clamp(2.5rem, 6vw, 5rem)',
           fontWeight: '700',
           color: color,
           textShadow: '0 2px 10px rgba(16, 185, 129, 0.3)',

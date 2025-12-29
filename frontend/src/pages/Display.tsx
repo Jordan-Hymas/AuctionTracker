@@ -73,7 +73,7 @@ export default function Display() {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          padding: 'clamp(0.5rem, 2vw, 2rem)',
+          padding: 'clamp(1rem, 3vw, 4rem)',
           zIndex: 1,
         }}
       >
@@ -81,7 +81,7 @@ export default function Display() {
         {settings?.logoPath && (
           <div
             style={{
-              marginBottom: 'clamp(0.5rem, 2vh, 2rem)',
+              marginBottom: 'clamp(1rem, 3vh, 4rem)',
               animation: 'fadeIn 1s ease-out',
               display: 'flex',
               justifyContent: 'center',
@@ -98,10 +98,10 @@ export default function Display() {
           style={{
             flex: 1,
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))',
-            gap: 'clamp(1rem, 3vw, 3rem)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 500px), 1fr))',
+            gap: 'clamp(2rem, 5vw, 6rem)',
             alignItems: 'center',
-            maxWidth: '1400px',
+            maxWidth: '2000px',
             width: '100%',
             margin: '0 auto',
           }}
@@ -130,7 +130,7 @@ export default function Display() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 'clamp(1rem, 2vw, 2rem)',
+              gap: 'clamp(2rem, 3vw, 4rem)',
             }}
           >
             {/* Total Display with Glow */}
@@ -181,7 +181,7 @@ export default function Display() {
               <div
                 style={{
                   width: '100%',
-                  maxWidth: 'min(600px, 90vw)',
+                  maxWidth: 'min(800px, 90vw)',
                   animation: 'fadeIn 1s ease-out 0.6s backwards',
                 }}
               >
