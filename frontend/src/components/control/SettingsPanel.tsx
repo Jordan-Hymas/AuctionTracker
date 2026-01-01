@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuction } from '../../context/AuctionContext';
 import { THEMES } from '../../types/theme';
+import { ControlTheme } from '../../types/controlTheme';
 
-export default function SettingsPanel() {
+interface SettingsPanelProps {
+  theme: ControlTheme;
+}
+
+export default function SettingsPanel({ theme }: SettingsPanelProps) {
   const { settings, updateSettings } = useAuction();
   const [startingTotal, setStartingTotal] = useState('0');
   const [goalAmount, setGoalAmount] = useState('');
@@ -62,23 +67,25 @@ export default function SettingsPanel() {
   return (
     <div
       style={{
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.cardBg,
         borderRadius: '8px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        padding: '1rem',
+        boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >
-      <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Settings</h2>
+      <h2 style={{ marginBottom: '0.75rem', fontSize: '1.125rem', fontWeight: '600', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>Settings</h2>
 
       {error && (
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
+            backgroundColor: theme.colors.redLight,
+            color: theme.colors.redDark,
             borderRadius: '4px',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
             fontSize: '0.875rem',
+            transition: 'all 0.2s',
           }}
         >
           {error}
@@ -89,19 +96,20 @@ export default function SettingsPanel() {
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#d1fae5',
-            color: '#065f46',
+            backgroundColor: theme.colors.greenLight,
+            color: theme.colors.greenDark,
             borderRadius: '4px',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
             fontSize: '0.875rem',
+            transition: 'all 0.2s',
           }}
         >
           Settings saved successfully!
         </div>
       )}
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
           Starting Total ($)
         </label>
         <input
@@ -112,19 +120,22 @@ export default function SettingsPanel() {
           disabled={isSaving}
           style={{
             width: '100%',
-            padding: '0.75rem',
-            border: '1px solid #d1d5db',
+            padding: '0.625rem',
+            border: `1px solid ${theme.colors.inputBorder}`,
             borderRadius: '4px',
-            fontSize: '1rem',
+            fontSize: '0.875rem',
+            backgroundColor: theme.colors.inputBg,
+            color: theme.colors.textPrimary,
+            transition: 'all 0.2s',
           }}
         />
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+        <p style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, marginTop: '0.25rem', transition: 'color 0.2s' }}>
           Initial amount before bids (e.g., $1,000)
         </p>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
           Goal Amount ($)
         </label>
         <input
@@ -136,20 +147,23 @@ export default function SettingsPanel() {
           disabled={isSaving}
           style={{
             width: '100%',
-            padding: '0.75rem',
-            border: '1px solid #d1d5db',
+            padding: '0.625rem',
+            border: `1px solid ${theme.colors.inputBorder}`,
             borderRadius: '4px',
-            fontSize: '1rem',
+            fontSize: '0.875rem',
+            backgroundColor: theme.colors.inputBg,
+            color: theme.colors.textPrimary,
+            transition: 'all 0.2s',
           }}
         />
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+        <p style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, marginTop: '0.25rem', transition: 'color 0.2s' }}>
           Fundraising goal (e.g., $10,000)
         </p>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-          Theme
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
+          Theme (Display Page)
         </label>
         <select
           value={themeName}
@@ -157,23 +171,26 @@ export default function SettingsPanel() {
           disabled={isSaving}
           style={{
             width: '100%',
-            padding: '0.75rem',
-            border: '1px solid #d1d5db',
+            padding: '0.625rem',
+            border: `1px solid ${theme.colors.inputBorder}`,
             borderRadius: '4px',
-            fontSize: '1rem',
-            backgroundColor: 'white',
+            fontSize: '0.875rem',
+            backgroundColor: theme.colors.inputBg,
+            color: theme.colors.textPrimary,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
           }}
         >
-          {Object.entries(THEMES).map(([key, theme]) => (
+          {Object.entries(THEMES).map(([key, themeObj]) => (
             <option key={key} value={key}>
-              {theme.name}
+              {themeObj.name}
             </option>
           ))}
         </select>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
           <input
             type="checkbox"
             checked={showLastBid}
@@ -190,14 +207,31 @@ export default function SettingsPanel() {
         disabled={isSaving}
         style={{
           width: '100%',
-          padding: '0.75rem',
+          padding: '0.625rem',
           border: 'none',
-          borderRadius: '4px',
-          backgroundColor: isSaving ? '#9ca3af' : '#10b981',
+          borderRadius: '6px',
+          backgroundColor: isSaving ? theme.colors.cardBorder : theme.colors.green,
           color: 'white',
           cursor: isSaving ? 'not-allowed' : 'pointer',
-          fontSize: '1rem',
+          fontSize: '0.875rem',
           fontWeight: '600',
+          transition: 'all 0.2s',
+          letterSpacing: '0.025em',
+          boxShadow: isSaving ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
+        }}
+        onMouseEnter={(e) => {
+          if (!isSaving) {
+            e.currentTarget.style.backgroundColor = theme.colors.greenDark;
+            e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isSaving) {
+            e.currentTarget.style.backgroundColor = theme.colors.green;
+            e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
+            e.currentTarget.style.transform = 'translateY(0)';
+          }
         }}
       >
         {isSaving ? 'Saving...' : 'Save Settings'}

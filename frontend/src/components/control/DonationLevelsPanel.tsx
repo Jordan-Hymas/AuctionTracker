@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuction } from '../../context/AuctionContext';
+import { ControlTheme } from '../../types/controlTheme';
 
-export default function DonationLevelsPanel() {
+interface DonationLevelsPanelProps {
+  theme: ControlTheme;
+}
+
+export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps) {
   const { settings, updateSettings } = useAuction();
   const [levels, setLevels] = useState<number[]>([]);
   const [newLevel, setNewLevel] = useState('');
@@ -75,32 +80,35 @@ export default function DonationLevelsPanel() {
   return (
     <div
       style={{
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.cardBg,
         borderRadius: '8px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        padding: '1.5rem',
+        boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        padding: '1rem',
+        transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >
       <h3
         style={{
           fontSize: '1.125rem',
           fontWeight: '600',
-          marginBottom: '1rem',
-          color: '#111827',
+          marginBottom: '0.75rem',
+          color: theme.colors.textPrimary,
+          transition: 'color 0.2s',
         }}
       >
         Donation Levels
       </h3>
 
       {/* Current Levels */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '0.75rem' }}>
         <label
           style={{
             display: 'block',
             fontSize: '0.875rem',
             fontWeight: '500',
-            color: '#374151',
+            color: theme.colors.textPrimary,
             marginBottom: '0.5rem',
+            transition: 'color 0.2s',
           }}
         >
           Current Levels:
@@ -112,13 +120,14 @@ export default function DonationLevelsPanel() {
             gap: '0.5rem',
             minHeight: '3rem',
             padding: '0.5rem',
-            backgroundColor: '#f9fafb',
+            backgroundColor: theme.mode === 'light' ? '#f9fafb' : theme.colors.inputBg,
             borderRadius: '6px',
-            border: '1px solid #e5e7eb',
+            border: `1px solid ${theme.colors.cardBorder}`,
+            transition: 'all 0.2s',
           }}
         >
           {levels.length === 0 ? (
-            <span style={{ color: '#9ca3af', fontSize: '0.875rem', padding: '0.5rem' }}>
+            <span style={{ color: theme.colors.textMuted, fontSize: '0.875rem', padding: '0.5rem', transition: 'color 0.2s' }}>
               No levels set. Add your first level below.
             </span>
           ) : (
@@ -130,12 +139,13 @@ export default function DonationLevelsPanel() {
                   alignItems: 'center',
                   gap: '0.5rem',
                   padding: '0.5rem 0.75rem',
-                  backgroundColor: '#dbeafe',
-                  border: '1px solid #3b82f6',
+                  backgroundColor: theme.colors.blueLighter,
+                  border: `1px solid ${theme.colors.blue}`,
                   borderRadius: '9999px',
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  color: '#1e40af',
+                  color: theme.colors.blueDark,
+                  transition: 'all 0.2s',
                 }}
               >
                 <span>{formatCurrency(level)}</span>
@@ -144,18 +154,19 @@ export default function DonationLevelsPanel() {
                   style={{
                     backgroundColor: 'transparent',
                     border: 'none',
-                    color: '#ef4444',
+                    color: theme.colors.red,
                     cursor: 'pointer',
                     fontSize: '1rem',
                     fontWeight: '700',
                     padding: '0',
                     lineHeight: '1',
+                    transition: 'color 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#dc2626';
+                    e.currentTarget.style.color = theme.colors.redDark;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.color = theme.colors.red;
                   }}
                   title="Remove level"
                 >
@@ -168,19 +179,20 @@ export default function DonationLevelsPanel() {
       </div>
 
       {/* Add New Level */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '0.75rem' }}>
         <label
           style={{
             display: 'block',
             fontSize: '0.875rem',
             fontWeight: '500',
-            color: '#374151',
+            color: theme.colors.textPrimary,
             marginBottom: '0.5rem',
+            transition: 'color 0.2s',
           }}
         >
           Add New Level:
         </label>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
           <input
             type="number"
             value={newLevel}
@@ -191,34 +203,42 @@ export default function DonationLevelsPanel() {
             step="1"
             style={{
               flex: 1,
+              minWidth: 0,
               padding: '0.5rem 0.75rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
+              border: `1px solid ${theme.colors.inputBorder}`,
+              borderRadius: '4px',
               fontSize: '0.875rem',
+              backgroundColor: theme.colors.inputBg,
+              color: theme.colors.textPrimary,
+              transition: 'all 0.2s',
             }}
           />
           <button
             onClick={handleAddLevel}
             disabled={!newLevel}
             style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: !newLevel ? '#9ca3af' : '#2563eb',
+              padding: '0.5rem 0.875rem',
+              backgroundColor: !newLevel ? theme.colors.cardBorder : theme.colors.blue,
               color: 'white',
               border: 'none',
               borderRadius: '6px',
               fontSize: '0.875rem',
-              fontWeight: '500',
+              fontWeight: '600',
               cursor: !newLevel ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               if (newLevel) {
-                e.currentTarget.style.backgroundColor = '#1d4ed8';
+                e.currentTarget.style.backgroundColor = theme.colors.blueDark;
+                e.currentTarget.style.transform = 'scale(1.02)';
               }
             }}
             onMouseLeave={(e) => {
               if (newLevel) {
-                e.currentTarget.style.backgroundColor = '#2563eb';
+                e.currentTarget.style.backgroundColor = theme.colors.blue;
+                e.currentTarget.style.transform = 'scale(1)';
               }
             }}
           >
@@ -232,11 +252,12 @@ export default function DonationLevelsPanel() {
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
-            borderRadius: '6px',
+            backgroundColor: theme.colors.redLight,
+            color: theme.colors.redDark,
+            borderRadius: '4px',
             fontSize: '0.875rem',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
+            transition: 'all 0.2s',
           }}
         >
           {errorMessage}
@@ -248,11 +269,12 @@ export default function DonationLevelsPanel() {
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#d1fae5',
-            color: '#065f46',
-            borderRadius: '6px',
+            backgroundColor: theme.colors.greenLight,
+            color: theme.colors.greenDark,
+            borderRadius: '4px',
             fontSize: '0.875rem',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
+            transition: 'all 0.2s',
           }}
         >
           {successMessage}
@@ -265,24 +287,30 @@ export default function DonationLevelsPanel() {
         disabled={isSaving}
         style={{
           width: '100%',
-          padding: '0.75rem',
-          backgroundColor: isSaving ? '#9ca3af' : '#10b981',
+          padding: '0.625rem',
+          backgroundColor: isSaving ? theme.colors.cardBorder : theme.colors.green,
           color: 'white',
           border: 'none',
           borderRadius: '6px',
           fontSize: '0.875rem',
           fontWeight: '600',
           cursor: isSaving ? 'not-allowed' : 'pointer',
-          transition: 'background-color 0.2s',
+          transition: 'all 0.2s',
+          letterSpacing: '0.025em',
+          boxShadow: isSaving ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
         }}
         onMouseEnter={(e) => {
           if (!isSaving) {
-            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.backgroundColor = theme.colors.greenDark;
+            e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isSaving) {
-            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.backgroundColor = theme.colors.green;
+            e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
+            e.currentTarget.style.transform = 'translateY(0)';
           }
         }}
       >

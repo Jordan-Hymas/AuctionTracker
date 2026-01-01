@@ -261,12 +261,41 @@ export default function Display() {
         </button>
       )}
 
-      {/* Connection Status Indicator */}
+      {/* Company Logo - Bottom Right */}
       <div
         style={{
           position: 'fixed',
           bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
           right: 'clamp(0.5rem, 2vw, 1.5rem)',
+          zIndex: 99,
+          opacity: 0.8,
+          transition: 'opacity 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.8';
+        }}
+      >
+        <img
+          src="/branding/company-logo.png"
+          alt="Created by"
+          style={{
+            height: 'clamp(40px, 4vw, 60px)',
+            width: 'auto',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))',
+          }}
+        />
+      </div>
+
+      {/* Connection Status Indicator */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
+          right: 'clamp(80px, 12vw, 150px)',
           display: 'flex',
           alignItems: 'center',
           gap: 'clamp(0.25rem, 1vw, 0.75rem)',

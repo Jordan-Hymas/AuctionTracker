@@ -1,6 +1,11 @@
 import { useAuction } from '../../context/AuctionContext';
+import { ControlTheme } from '../../types/controlTheme';
 
-export default function CurrentLevelSelector() {
+interface CurrentLevelSelectorProps {
+  theme: ControlTheme;
+}
+
+export default function CurrentLevelSelector({ theme }: CurrentLevelSelectorProps) {
   const { settings, updateSettings } = useAuction();
 
   const donationLevels = settings?.donationLevels || [];
@@ -27,26 +32,29 @@ export default function CurrentLevelSelector() {
     return (
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: theme.colors.cardBg,
           borderRadius: '8px',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-          padding: '1.5rem',
+          boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+          padding: '1rem',
+          transition: 'background-color 0.2s, box-shadow 0.2s',
         }}
       >
         <h3
           style={{
             fontSize: '1.125rem',
             fontWeight: '600',
-            marginBottom: '1rem',
-            color: '#111827',
+            marginBottom: '0.75rem',
+            color: theme.colors.textPrimary,
+            transition: 'color 0.2s',
           }}
         >
           Select Active Level
         </h3>
         <p
           style={{
-            color: '#6b7280',
+            color: theme.colors.textSecondary,
             fontSize: '0.875rem',
+            transition: 'color 0.2s',
           }}
         >
           No donation levels configured. Add levels below to get started.
@@ -58,18 +66,20 @@ export default function CurrentLevelSelector() {
   return (
     <div
       style={{
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.cardBg,
         borderRadius: '8px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        padding: '1.5rem',
+        boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        padding: '1rem',
+        transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >
       <h3
         style={{
           fontSize: '1.125rem',
           fontWeight: '600',
-          marginBottom: '1rem',
-          color: '#111827',
+          marginBottom: '0.75rem',
+          color: theme.colors.textPrimary,
+          transition: 'color 0.2s',
         }}
       >
         Select Active Level
@@ -81,7 +91,7 @@ export default function CurrentLevelSelector() {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
           gap: '0.75rem',
-          marginBottom: '1rem',
+          marginBottom: '0.75rem',
         }}
       >
         {donationLevels.map((level) => {
@@ -91,27 +101,29 @@ export default function CurrentLevelSelector() {
               key={level}
               onClick={() => handleLevelSelect(level)}
               style={{
-                padding: '1rem 0.5rem',
-                backgroundColor: isActive ? '#10b981' : '#f3f4f6',
-                color: isActive ? 'white' : '#374151',
-                border: isActive ? '2px solid #059669' : '2px solid #e5e7eb',
-                borderRadius: '8px',
+                padding: '0.875rem 0.5rem',
+                backgroundColor: isActive ? theme.colors.green : theme.colors.inputBg,
+                color: isActive ? 'white' : theme.colors.textPrimary,
+                border: isActive ? `2px solid ${theme.colors.greenDark}` : `2px solid ${theme.colors.inputBorder}`,
+                borderRadius: '6px',
                 fontSize: '1.125rem',
                 fontWeight: '700',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: isActive ? '0 4px 6px rgba(16, 185, 129, 0.3)' : 'none',
+                boxShadow: isActive ? `0 4px 6px ${theme.colors.shadowMd}` : 'none',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.backgroundColor = '#e5e7eb';
-                  e.currentTarget.style.borderColor = '#d1d5db';
+                  e.currentTarget.style.backgroundColor = theme.colors.hover;
+                  e.currentTarget.style.borderColor = theme.colors.cardBorder;
+                  e.currentTarget.style.transform = 'scale(1.02)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.backgroundColor = '#f3f4f6';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  e.currentTarget.style.backgroundColor = theme.colors.inputBg;
+                  e.currentTarget.style.borderColor = theme.colors.inputBorder;
+                  e.currentTarget.style.transform = 'scale(1)';
                 }
               }}
             >
@@ -127,21 +139,31 @@ export default function CurrentLevelSelector() {
           onClick={() => handleLevelSelect(null)}
           style={{
             width: '100%',
-            padding: '0.75rem',
-            backgroundColor: '#ef4444',
-            color: 'white',
-            border: 'none',
+            padding: '0.625rem',
+            backgroundColor: theme.colors.cardBg,
+            color: theme.colors.red,
+            border: `1px solid ${theme.colors.red}`,
             borderRadius: '6px',
             fontSize: '0.875rem',
             fontWeight: '600',
             cursor: 'pointer',
-            transition: 'background-color 0.2s',
+            transition: 'all 0.2s',
+            letterSpacing: '0.025em',
+            boxShadow: `0 1px 2px ${theme.colors.shadow}`,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#dc2626';
+            e.currentTarget.style.backgroundColor = theme.colors.redLight;
+            e.currentTarget.style.color = theme.colors.redDark;
+            e.currentTarget.style.borderColor = theme.colors.redDark;
+            e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#ef4444';
+            e.currentTarget.style.backgroundColor = theme.colors.cardBg;
+            e.currentTarget.style.color = theme.colors.red;
+            e.currentTarget.style.borderColor = theme.colors.red;
+            e.currentTarget.style.boxShadow = `0 1px 2px ${theme.colors.shadow}`;
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           Clear Selection
