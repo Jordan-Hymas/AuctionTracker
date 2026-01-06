@@ -87,8 +87,8 @@ export default function CurrentLevelDisplay({
             color: primaryColor,
             lineHeight: '1',
             textShadow: `
-              0 0 20px ${primaryColor}80,
-              0 0 40px ${primaryColor}60,
+              0 0 40px ${primaryColor}38,
+              0 0 80px ${primaryColor}26,
               0 4px 20px rgba(0, 0, 0, 0.5)
             `,
             fontFamily: 'system-ui, -apple-system, sans-serif',

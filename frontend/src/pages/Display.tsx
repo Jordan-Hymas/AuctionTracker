@@ -48,7 +48,7 @@ export default function Display() {
     );
   }
 
-  const themeName = settings?.themeName || 'classic';
+  const themeName = settings?.themeName || 'boysGirlsClub';
   const primaryColor = settings?.themePrimaryColor || '#2563eb';
   const secondaryColor = settings?.themeSecondaryColor || '#3b82f6';
 
@@ -56,11 +56,17 @@ export default function Display() {
     <div
       style={{
         position: 'relative',
+        display: 'grid',
+        gridTemplateRows: 'auto 1fr auto',
+        gridTemplateColumns: '1fr',
         minHeight: '100vh',
         width: '100vw',
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        cursor: 'default',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
       }}
     >
       {/* Animated Background */}
@@ -70,10 +76,11 @@ export default function Display() {
       <div
         style={{
           position: 'relative',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'clamp(1rem, 3vw, 4rem)',
+          display: 'grid',
+          gridTemplateRows: 'auto 1fr',
+          alignItems: 'center',
+          justifyItems: 'center',
+          padding: 'clamp(0.5rem, 2vh, 2rem) clamp(1rem, 2vw, 4rem)',
           zIndex: 1,
         }}
       >
@@ -81,7 +88,7 @@ export default function Display() {
         {settings?.logoPath && (
           <div
             style={{
-              marginBottom: 'clamp(1rem, 3vh, 4rem)',
+              marginBottom: 'clamp(0.5rem, 2vh, 2rem)',
               animation: 'fadeIn 1s ease-out',
               display: 'flex',
               justifyContent: 'center',
@@ -95,13 +102,15 @@ export default function Display() {
 
         {/* Main Content Grid */}
         <div
+          className="content-grid"
           style={{
-            flex: 1,
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 500px), 1fr))',
-            gap: 'clamp(2rem, 5vw, 6rem)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 450px), 1fr))',
+            columnGap: 'clamp(2rem, 4vw, 6rem)',
+            rowGap: 'clamp(2rem, 3vh, 4rem)',
             alignItems: 'center',
-            maxWidth: '2000px',
+            justifyItems: 'center',
+            maxWidth: 'min(95vw, 3200px)',
             width: '100%',
             margin: '0 auto',
           }}
@@ -161,7 +170,8 @@ export default function Display() {
               <TotalDisplay
                 total={currentTotal}
                 color={secondaryColor}
-                labelColor={themeName === 'boysGirlsClub' ? '#000000' : undefined}
+                labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                themeName={themeName}
               />
             </div>
 
@@ -170,8 +180,9 @@ export default function Display() {
               <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
                 <GoalDisplay
                   goalAmount={goalAmount}
-                  color={themeName === 'boysGirlsClub' ? '#FFFFFF' : '#fbbf24'}
-                  labelColor={themeName === 'boysGirlsClub' ? '#000000' : undefined}
+                  color={themeName === 'boysGirlsClub' ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+                  labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                  themeName={themeName}
                 />
               </div>
             )}
@@ -191,6 +202,7 @@ export default function Display() {
                   startingTotal={startingTotal}
                   primaryColor={primaryColor}
                   progressBarGradient={settings?.themeProgressBarGradient}
+                  themeName={themeName}
                 />
               </div>
             )}
@@ -221,8 +233,8 @@ export default function Display() {
           onClick={toggleFullscreen}
           style={{
             position: 'fixed',
-            bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
-            left: 'clamp(0.5rem, 2vw, 1.5rem)',
+            bottom: 'clamp(1rem, 2vh, 2rem)',
+            left: 'clamp(1rem, 2vw, 2rem)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
             backgroundColor:
               themeName === 'boysGirlsClub'
@@ -265,8 +277,8 @@ export default function Display() {
       <div
         style={{
           position: 'fixed',
-          bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
-          right: 'clamp(0.5rem, 2vw, 1.5rem)',
+          bottom: 'clamp(1rem, 2vh, 2rem)',
+          right: 'clamp(1rem, 2vw, 2rem)',
           zIndex: 99,
           opacity: 0.8,
           transition: 'opacity 0.3s ease',
@@ -282,7 +294,7 @@ export default function Display() {
           src="/branding/company-logo.png"
           alt="Created by"
           style={{
-            height: 'clamp(40px, 4vw, 60px)',
+            height: 'clamp(50px, 5vmin, 100px)',
             width: 'auto',
             objectFit: 'contain',
             filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))',
@@ -292,10 +304,11 @@ export default function Display() {
 
       {/* Connection Status Indicator */}
       <div
+        className="connection-status"
         style={{
           position: 'fixed',
-          bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
-          right: 'clamp(80px, 12vw, 150px)',
+          bottom: 'clamp(1rem, 2vh, 2rem)',
+          right: 'clamp(120px, calc(2vw + 100px), 200px)',
           display: 'flex',
           alignItems: 'center',
           gap: 'clamp(0.25rem, 1vw, 0.75rem)',
@@ -328,6 +341,61 @@ export default function Display() {
         />
         {isConnected ? 'LIVE' : 'DISCONNECTED'}
       </div>
+
+      {/* Responsive Media Queries */}
+      <style>
+        {`
+          /* Small Laptop - Prevent collisions */
+          @media (max-width: 1366px) {
+            .connection-status {
+              bottom: clamp(5rem, 10vh, 7rem) !important;
+              right: clamp(1rem, 2vw, 2rem) !important;
+            }
+          }
+
+          /* Standard Desktop */
+          @media (min-width: 1920px) and (max-width: 2560px) {
+            /* Grid gaps are handled by inline styles with clamp */
+          }
+
+          /* Large Display (4K) */
+          @media (min-width: 2560px) and (max-width: 4096px) {
+            /* Increase gap between grid items */
+            .content-grid {
+              column-gap: clamp(3rem, 5vw, 8rem);
+              row-gap: clamp(2.5rem, 4vh, 5rem);
+            }
+          }
+
+          /* Stadium Display (8K+) */
+          @media (min-width: 4096px) {
+            .content-grid {
+              column-gap: clamp(4rem, 6vw, 10rem);
+              row-gap: clamp(3rem, 5vh, 6rem);
+            }
+
+            .connection-status {
+              right: clamp(200px, calc(2vw + 150px), 300px) !important;
+            }
+          }
+
+          /* Ultra-wide displays (21:9, 32:9) */
+          @media (min-aspect-ratio: 21/9) {
+            .content-grid {
+              grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+              column-gap: clamp(3rem, 5vw, 8rem);
+            }
+          }
+
+          /* Portrait or tall displays */
+          @media (max-aspect-ratio: 4/3) {
+            .content-grid {
+              grid-template-columns: 1fr;
+              row-gap: clamp(2rem, 4vh, 4rem);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }

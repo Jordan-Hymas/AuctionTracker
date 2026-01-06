@@ -11,7 +11,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
   const { settings, updateSettings } = useAuction();
   const [startingTotal, setStartingTotal] = useState('0');
   const [goalAmount, setGoalAmount] = useState('');
-  const [themeName, setThemeName] = useState('classic');
+  const [themeName, setThemeName] = useState('boysGirlsClub');
   const [showLastBid, setShowLastBid] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);

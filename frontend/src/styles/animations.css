@@ -236,3 +236,92 @@
     box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.5);
   }
 }
+
+/* Gradient Slide Horizontal - For animated progress bar gradient */
+@keyframes gradientSlideHorizontal {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Diagonal Stripe Flow - Barber pole effect */
+@keyframes diagonalStripeFlow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 56.57px 56.57px;
+  }
+}
+
+/* Wave Flow - Wave ripple effect */
+@keyframes waveFlow {
+  0% {
+    background-position: 0 50%;
+  }
+  100% {
+    background-position: 500px 50%;
+  }
+}
+
+/* Inner Glow Pulse - Idle state */
+@keyframes innerGlowPulse {
+  0%, 100% {
+    --glow-size: 15px;
+    --glow-opacity: 0.3;
+  }
+  50% {
+    --glow-size: 25px;
+    --glow-opacity: 0.5;
+  }
+}
+
+/* Inner Glow Pulse Active - Active state */
+@keyframes innerGlowPulseActive {
+  0% {
+    --glow-size: 20px;
+    --glow-opacity: 0.6;
+  }
+  100% {
+    --glow-size: 30px;
+    --glow-opacity: 1.0;
+  }
+}
+
+/* Border Race - Racing light around border */
+@keyframes borderRace {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+/* Border Pulse Expand - Expanding border on updates */
+@keyframes borderPulseExpand {
+  0% {
+    box-shadow: 0 0 0 0 rgba(226, 71, 37, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(226, 71, 37, 0);
+  }
+}
+
+/* Corner Pulse - Corner accent lights */
+@keyframes cornerPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
