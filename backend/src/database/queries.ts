@@ -92,6 +92,7 @@ export function getSettings(): Settings {
   }
   const settings = snakeToCamel(row);
   settings.showLastBid = Boolean(settings.showLastBid);
+  settings.goalReachedEnabled = Boolean(settings.goalReachedEnabled);
 
   // Parse donation_levels JSON
   try {
@@ -171,6 +172,18 @@ export function updateSettings(updates: UpdateSettings): Settings {
 
     fields.push('current_donation_level = ?');
     values.push(updates.currentDonationLevel);
+  }
+  if (updates.goalReachedEnabled !== undefined) {
+    fields.push('goal_reached_enabled = ?');
+    values.push(updates.goalReachedEnabled ? 1 : 0);
+  }
+  if (updates.goalReachedManualTotal !== undefined) {
+    fields.push('goal_reached_manual_total = ?');
+    values.push(updates.goalReachedManualTotal);
+  }
+  if (updates.goalReachedMessage !== undefined) {
+    fields.push('goal_reached_message = ?');
+    values.push(updates.goalReachedMessage);
   }
 
   if (fields.length === 0) {

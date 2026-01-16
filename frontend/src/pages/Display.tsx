@@ -8,10 +8,16 @@ import AnimatedBackground from '../components/display/AnimatedBackground';
 import UpdateFlash from '../components/display/UpdateFlash';
 import MoneyGrowthBar from '../components/display/MoneyGrowthBar';
 import CurrentLevelDisplay from '../components/display/CurrentLevelDisplay';
+import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
 
 export default function Display() {
   const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, lastUpdateTime, isConnected } = useAuction();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Calculate progress
+  const progress = goalAmount && goalAmount > 0
+    ? Math.min(((currentTotal - startingTotal) / (goalAmount - startingTotal)) * 100, 100)
+    : 0;
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -72,8 +78,20 @@ export default function Display() {
       {/* Animated Background */}
       <AnimatedBackground themeName={themeName} />
 
-      {/* Main Container */}
-      <div
+      {/* Conditional Rendering: Goal Reached Display or Normal Display */}
+      {settings?.goalReachedEnabled ? (
+        <GoalReachedDisplay
+          displayTotal={settings.goalReachedManualTotal || currentTotal}
+          message={settings.goalReachedMessage}
+          themeName={themeName}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          logoPath={settings.logoPath}
+        />
+      ) : (
+        <>
+          {/* Main Container */}
+          <div
         style={{
           position: 'relative',
           display: 'grid',
@@ -280,14 +298,14 @@ export default function Display() {
           bottom: 'clamp(1rem, 2vh, 2rem)',
           right: 'clamp(1rem, 2vw, 2rem)',
           zIndex: 99,
-          opacity: 0.8,
+          opacity: 0.2,
           transition: 'opacity 0.3s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '1';
+          e.currentTarget.style.opacity = '0.4';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = '0.8';
+          e.currentTarget.style.opacity = '0.2';
         }}
       >
         <img
@@ -341,6 +359,8 @@ export default function Display() {
         />
         {isConnected ? 'LIVE' : 'DISCONNECTED'}
       </div>
+        </>
+      )}
 
       {/* Responsive Media Queries */}
       <style>

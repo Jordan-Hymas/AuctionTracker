@@ -23,16 +23,6 @@ interface Particle {
   rotationSpeed: number;
 }
 
-interface ConfettiPiece {
-  id: number;
-  x: number;
-  delay: number;
-  duration: number;
-  color: string;
-  rotation: number;
-  size: number;
-}
-
 export default function MoneyGrowthBar({
   currentTotal,
   goalAmount,
@@ -47,7 +37,6 @@ export default function MoneyGrowthBar({
   const [particles, setParticles] = useState<Particle[]>([]);
   const [amountAdded, setAmountAdded] = useState<number>(0);
   const [showAmountAdded, setShowAmountAdded] = useState(false);
-  const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
   useEffect(() => {
     if (currentTotal !== previousTotal) {
@@ -122,26 +111,6 @@ export default function MoneyGrowthBar({
     Math.max(((animatedTotal - startingTotal) / (goalAmount - startingTotal)) * 100, 0),
     100
   );
-
-  // Create confetti when goal is reached
-  useEffect(() => {
-    if (progress >= 100 && confetti.length === 0) {
-      const confettiColors = ['#fbbf24', '#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#ef4444'];
-      const newConfetti: ConfettiPiece[] = [];
-      for (let i = 0; i < 100; i++) {
-        newConfetti.push({
-          id: i,
-          x: Math.random() * 100,
-          delay: Math.random() * 0.5,
-          duration: Math.random() * 2 + 3,
-          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-          rotation: Math.random() * 360,
-          size: Math.random() * 8 + 4,
-        });
-      }
-      setConfetti(newConfetti);
-    }
-  }, [progress, confetti.length]);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -632,62 +601,6 @@ export default function MoneyGrowthBar({
           }}
         >
           {formatCurrency(goalAmount - currentTotal)} to go!
-        </div>
-      )}
-
-      {/* Celebration Message */}
-      {progress >= 100 && (
-        <div
-          style={{
-            position: 'relative',
-            marginTop: 'clamp(0.5rem, 1.5vw, 1rem)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          {/* Confetti Animation */}
-          {confetti.map((piece) => (
-            <div
-              key={piece.id}
-              style={{
-                position: 'absolute',
-                left: `${piece.x}%`,
-                top: '-100px',
-                width: `${piece.size}px`,
-                height: `${piece.size}px`,
-                backgroundColor: piece.color,
-                borderRadius: piece.size > 6 ? '2px' : '50%',
-                animation: `confettiFall ${piece.duration}s linear ${piece.delay}s infinite`,
-                transform: `rotate(${piece.rotation}deg)`,
-                opacity: 0.9,
-                zIndex: 100,
-                boxShadow: `0 0 10px ${piece.color}`,
-                pointerEvents: 'none',
-              }}
-            />
-          ))}
-
-          {/* Goal Reached Text */}
-          <div
-            style={{
-              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-              color: '#fbbf24',
-              fontWeight: '900',
-              textShadow: '0 0 30px rgba(251, 191, 36, 0.4), 0 0 50px rgba(251, 191, 36, 0.3), 0 4px 15px rgba(0, 0, 0, 0.5), 3px 3px 0px rgba(0, 0, 0, 0.5)',
-              animation: 'pulse 2s ease-in-out infinite',
-              WebkitTextStroke: '1px rgba(0, 0, 0, 0.5)',
-              background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1))',
-              padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem)',
-              borderRadius: '12px',
-              border: '3px solid rgba(251, 191, 36, 0.6)',
-              backdropFilter: 'blur(10px)',
-              textAlign: 'center',
-              zIndex: 1,
-            }}
-          >
-            GOAL REACHED!
-          </div>
         </div>
       )}
 

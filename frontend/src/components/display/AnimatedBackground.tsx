@@ -202,8 +202,8 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
                 rgba(37, 150, 190, 0.10) 495px,
                 transparent 495px
               )`,
-              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 80%, rgba(0,0,0,0.5) 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 80%, rgba(0,0,0,0.5) 100%)',
             }}
           />
           {/* Right side - Boys & Girls Club blue vertical stripes (6 lines) */}
@@ -217,38 +217,38 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
               zIndex: -1,
               background: `linear-gradient(
                 270deg,
-                rgba(37, 150, 190, 0.24) 0px,
-                rgba(45, 160, 200, 0.27) 40px,
-                rgba(37, 150, 190, 0.24) 80px,
+                rgba(37, 150, 190, 0.30) 0px,
+                rgba(45, 160, 200, 0.35) 40px,
+                rgba(37, 150, 190, 0.30) 80px,
                 rgba(255, 255, 255, 0.25) 80px,
                 rgba(255, 255, 255, 0.25) 83px,
-                rgba(30, 140, 180, 0.19) 83px,
-                rgba(40, 155, 195, 0.22) 123px,
-                rgba(30, 140, 180, 0.19) 163px,
+                rgba(30, 140, 180, 0.26) 83px,
+                rgba(40, 155, 195, 0.30) 123px,
+                rgba(30, 140, 180, 0.26) 163px,
                 rgba(255, 255, 255, 0.22) 163px,
                 rgba(255, 255, 255, 0.22) 166px,
-                rgba(37, 150, 190, 0.15) 166px,
-                rgba(42, 158, 198, 0.18) 206px,
-                rgba(37, 150, 190, 0.15) 246px,
+                rgba(37, 150, 190, 0.22) 166px,
+                rgba(42, 158, 198, 0.26) 206px,
+                rgba(37, 150, 190, 0.22) 246px,
                 rgba(255, 255, 255, 0.18) 246px,
                 rgba(255, 255, 255, 0.18) 249px,
-                rgba(35, 148, 188, 0.11) 249px,
-                rgba(38, 152, 192, 0.14) 289px,
-                rgba(35, 148, 188, 0.11) 329px,
+                rgba(35, 148, 188, 0.18) 249px,
+                rgba(38, 152, 192, 0.22) 289px,
+                rgba(35, 148, 188, 0.18) 329px,
                 rgba(255, 255, 255, 0.14) 329px,
                 rgba(255, 255, 255, 0.14) 332px,
-                rgba(32, 145, 185, 0.07) 332px,
-                rgba(40, 155, 195, 0.10) 372px,
-                rgba(32, 145, 185, 0.07) 412px,
+                rgba(32, 145, 185, 0.14) 332px,
+                rgba(40, 155, 195, 0.18) 372px,
+                rgba(32, 145, 185, 0.14) 412px,
                 rgba(255, 255, 255, 0.10) 412px,
                 rgba(255, 255, 255, 0.10) 415px,
-                rgba(37, 150, 190, 0.04) 415px,
-                rgba(40, 155, 195, 0.06) 455px,
-                rgba(37, 150, 190, 0.04) 495px,
+                rgba(37, 150, 190, 0.10) 415px,
+                rgba(40, 155, 195, 0.14) 455px,
+                rgba(37, 150, 190, 0.10) 495px,
                 transparent 495px
               )`,
-              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 80%, rgba(0,0,0,0.5) 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 80%, rgba(0,0,0,0.5) 100%)',
             }}
           />
         </>
@@ -384,7 +384,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
               borderRadius: '50%',
               background:
                 themeName === 'boysGirlsClub'
-                  ? 'radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent)'
+                  ? 'radial-gradient(circle, rgba(0, 133, 202, 0.35), transparent)'
                   : 'radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent)',
               filter: 'blur(80px)',
               animation: 'pulse 10s ease-in-out infinite reverse',

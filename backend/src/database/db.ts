@@ -77,6 +77,21 @@ export function initializeDatabase() {
     db.exec(`ALTER TABLE settings ADD COLUMN theme_progress_bar_gradient TEXT DEFAULT 'linear-gradient(90deg, #10b981, #34d399, #6ee7b7)'`);
   }
 
+  if (!columnNames.includes('goal_reached_enabled')) {
+    console.log('🔄 Adding goal_reached_enabled column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_enabled INTEGER DEFAULT 0`);
+  }
+
+  if (!columnNames.includes('goal_reached_manual_total')) {
+    console.log('🔄 Adding goal_reached_manual_total column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_manual_total REAL DEFAULT NULL`);
+  }
+
+  if (!columnNames.includes('goal_reached_message')) {
+    console.log('🔄 Adding goal_reached_message column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_message TEXT DEFAULT NULL`);
+  }
+
   // Insert default settings if not exists
   const settingsCount = db.prepare('SELECT COUNT(*) as count FROM settings').get() as { count: number };
   if (settingsCount.count === 0) {

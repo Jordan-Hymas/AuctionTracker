@@ -7,6 +7,7 @@ import ExportButton from '../components/control/ExportButton';
 import ResetButton from '../components/control/ResetButton';
 import CurrentLevelSelector from '../components/control/CurrentLevelSelector';
 import DonationLevelsPanel from '../components/control/DonationLevelsPanel';
+import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
 import { adminApi } from '../services/api';
 import { useState, useEffect } from 'react';
@@ -309,7 +310,7 @@ export default function Control() {
           </div>
 
           {/* Right Column */}
-          <div style={{ display: 'grid', gridTemplateRows: 'minmax(0, auto) minmax(0, auto)', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateRows: 'minmax(0, auto) minmax(0, auto) minmax(0, auto)', gap: '1rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.05fr) minmax(0, 0.95fr)', gap: '1rem' }}>
               <CurrentLevelSelector theme={theme} />
               <DonationLevelsPanel theme={theme} />
@@ -318,6 +319,7 @@ export default function Control() {
               <SettingsPanel theme={theme} />
               <LogoUploader theme={theme} />
             </div>
+            <GoalReachedPanel theme={theme} />
           </div>
         </div>
 

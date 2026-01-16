@@ -12,6 +12,9 @@ export interface Settings {
   showLastBid: boolean;
   donationLevels: number[];
   currentDonationLevel: number | null;
+  goalReachedEnabled: boolean;
+  goalReachedManualTotal: number | null;
+  goalReachedMessage: string | null;
   updatedAt: string;
 }
 
@@ -28,4 +31,7 @@ export interface UpdateSettings {
   showLastBid?: boolean;
   donationLevels?: number[];
   currentDonationLevel?: number | null;
+  goalReachedEnabled?: boolean;
+  goalReachedManualTotal?: number | null;
+  goalReachedMessage?: string | null;
 }
