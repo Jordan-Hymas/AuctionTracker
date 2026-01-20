@@ -142,7 +142,8 @@ export default function Display() {
             alignItems: 'center',
             justifyContent: 'center',
             width: '100%',
-            marginTop: 'clamp(6rem, 14vh, 12rem)',
+            marginTop: 'clamp(8rem, 18vh, 16rem)',
+            transform: 'translateX(-62px)',
           }}
         >
           {/* Main Content Grid */}
