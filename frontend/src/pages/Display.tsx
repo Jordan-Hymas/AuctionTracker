@@ -115,16 +115,19 @@ export default function Display() {
           zIndex: 1,
         }}
       >
-        {/* Top: Logo */}
+        {/* Top: Logo - Fixed at top center */}
         {settings?.logoPath && (
           <div
             style={{
-              marginBottom: 'clamp(0.5rem, 2vh, 2rem)',
+              position: 'fixed',
+              top: 'clamp(1rem, 2vh, 2rem)',
+              left: '50%',
+              transform: 'translateX(-50%)',
               animation: 'fadeIn 1s ease-out',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '100%',
+              zIndex: 50,
             }}
           >
             <LogoDisplay logoUrl={settings.logoPath} />
@@ -139,6 +142,7 @@ export default function Display() {
             alignItems: 'center',
             justifyContent: 'center',
             width: '100%',
+            marginTop: 'clamp(6rem, 14vh, 12rem)',
           }}
         >
           {/* Main Content Grid */}
@@ -267,8 +271,10 @@ export default function Display() {
                   zIndex: 0,
                   overflow: 'hidden',
                   borderRadius: '50px 50px 150px 150px',
+                  isolation: 'isolate',
                 }}
               >
+                {/* Liquid fill */}
                 <div
                   style={{
                     position: 'absolute',
@@ -277,14 +283,97 @@ export default function Display() {
                     height: `${progress}%`,
                     background: getThermometerGradient(),
                     transition: 'height 1.5s ease-out',
-                    boxShadow: 'inset 2px 0 8px rgba(255, 255, 255, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2)',
+                    boxShadow: `
+                      inset 2px 0 4px rgba(255, 255, 255, 0.3),
+                      inset -2px 0 4px rgba(0, 0, 0, 0.2),
+                      inset 0 3px 6px rgba(255, 255, 255, 0.2),
+                      inset 0 -3px 8px rgba(0, 0, 0, 0.15)
+                    `,
                     willChange: 'height',
                     borderRadius: '50px 50px 150px 150px',
                   }}
                 />
+                {/* Liquid depth overlay */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    width: '100%',
+                    height: `${progress}%`,
+                    background: `linear-gradient(90deg,
+                      rgba(0, 0, 0, 0.15) 0%,
+                      rgba(255, 255, 255, 0.1) 20%,
+                      rgba(255, 255, 255, 0.2) 35%,
+                      rgba(255, 255, 255, 0.05) 50%,
+                      rgba(0, 0, 0, 0.12) 100%
+                    )`,
+                    borderRadius: '50px 50px 150px 150px',
+                    pointerEvents: 'none',
+                    transition: 'height 1.5s ease-out',
+                  }}
+                />
+                {/* Shine highlight */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '15%',
+                    width: '25%',
+                    height: `${progress}%`,
+                    background: 'linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0.1), transparent)',
+                    borderRadius: '50px 50px 150px 150px',
+                    pointerEvents: 'none',
+                    transition: 'height 1.5s ease-out',
+                  }}
+                />
+                {/* Subtle wave animation at top */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: `calc(${progress}% - 8px)`,
+                    left: 0,
+                    width: '100%',
+                    height: '16px',
+                    background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                    animation: 'liquidWave 2s ease-in-out infinite',
+                    transition: 'bottom 1.5s ease-out',
+                    pointerEvents: 'none',
+                  }}
+                />
+                {/* Animated bubbles */}
+                {[
+                  { left: '25%', size: 4, duration: 8, delay: 0 },
+                  { left: '45%', size: 3, duration: 10, delay: 2 },
+                  { left: '65%', size: 5, duration: 9, delay: 4 },
+                  { left: '35%', size: 3, duration: 11, delay: 1 },
+                  { left: '55%', size: 4, duration: 7, delay: 3 },
+                  { left: '30%', size: 2, duration: 12, delay: 5 },
+                  { left: '70%', size: 3, duration: 9, delay: 6 },
+                  { left: '40%', size: 2, duration: 10, delay: 7 },
+                  { left: '60%', size: 4, duration: 8, delay: 2.5 },
+                  { left: '50%', size: 3, duration: 11, delay: 4.5 },
+                ].map((bubble, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      bottom: '0%',
+                      left: bubble.left,
+                      width: `${bubble.size}px`,
+                      height: `${bubble.size}px`,
+                      background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.3))',
+                      borderRadius: '50%',
+                      animation: `bubbleFloat ${bubble.duration}s linear infinite`,
+                      animationDelay: `${bubble.delay}s`,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                ))}
+                
               </div>
 
-              {/* Thermometer Image - ON TOP */}
+              {/* Thermometer Image */}
               <img
                 src="/Background/thermometerFinal.png"
                 alt="Fundraising Thermometer"
@@ -299,6 +388,26 @@ export default function Display() {
                   transform: 'translateZ(0)',
                 }}
               />
+
+              {/* Percentage display - overlayed on top of thermometer */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '7.5%',
+                  left: '50%',
+                  transform: 'translateX(calc(-50% + 2px))',
+                  fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+                  fontWeight: '900',
+                  color: themeName === 'boysGirlsClub' ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
+                  textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 -1px 2px rgba(255,255,255,0.8)',
+                  zIndex: 10,
+                  whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {Math.round(progress)}%
+              </div>
             </div>
             </div>
           </div>
@@ -442,6 +551,48 @@ export default function Display() {
       {/* Responsive Media Queries */}
       <style>
         {`
+          /* Liquid wave animation */
+          @keyframes liquidWave {
+            0%, 100% {
+              transform: scaleX(0.9) scaleY(1);
+              opacity: 0.6;
+            }
+            50% {
+              transform: scaleX(1.1) scaleY(0.8);
+              opacity: 0.9;
+            }
+          }
+
+          /* Bubble float animation - slow and gentle */
+          @keyframes bubbleFloat {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0;
+            }
+            5% {
+              opacity: 0.5;
+            }
+            25% {
+              transform: translateY(-150px) translateX(2px);
+              opacity: 0.6;
+            }
+            50% {
+              transform: translateY(-300px) translateX(-2px);
+              opacity: 0.5;
+            }
+            75% {
+              transform: translateY(-450px) translateX(1px);
+              opacity: 0.4;
+            }
+            95% {
+              opacity: 0.2;
+            }
+            100% {
+              transform: translateY(-600px) translateX(0);
+              opacity: 0;
+            }
+          }
+
           /* Small Laptop - Prevent collisions */
           @media (max-width: 1366px) {
             .connection-status {
