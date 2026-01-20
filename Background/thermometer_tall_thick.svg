@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 320 920" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="outerGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#e9f1ff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#cfd9ea" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="glassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.80"/>
+      <stop offset="1" stop-color="#dfe8f7" stop-opacity="0.55"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-30%" y="-20%" width="160%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#1b2a46" flood-opacity="0.18"/>
+    </filter>
+
+    <clipPath id="thermoFillClip">
+      <rect x="134" y="110" width="52" height="620" rx="26" ry="26"/>
+      <circle cx="160" cy="770" r="56"/>
+    </clipPath>
+
+    <linearGradient id="highlightGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.70"/>
+      <stop offset="0.35" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <!-- Outer silhouette (taller) -->
+    <path d="M160 40
+             C205 40 238 74 238 118
+             L238 690
+             C238 720 222 746 198 762
+             C228 780 248 815 248 856
+             C248 903 209 920 160 920
+             C111 920 72 903 72 856
+             C72 815 92 780 122 762
+             C98 746 82 720 82 690
+             L82 118
+             C82 74 115 40 160 40 Z"
+          fill="url(#outerGrad)" stroke="#9fb3d8" stroke-width="4"/>
+
+    <!-- Inner glass channel -->
+    <path d="M160 72
+             C190 72 212 94 212 124
+             L212 696
+             C212 718 200 738 182 750
+             C206 766 222 795 222 830
+             C222 868 193 886 160 886
+             C127 886 98 868 98 830
+             C98 795 114 766 138 750
+             C120 738 108 718 108 696
+             L108 124
+             C108 94 130 72 160 72 Z"
+          fill="url(#glassGrad)" stroke="#b7c7e6" stroke-width="3"/>
+
+    <!-- Transparent fill window (clip only; background stays transparent) -->
+    <g clip-path="url(#thermoFillClip)">
+      <rect x="92" y="72" width="136" height="840" fill="#000" fill-opacity="0"/>
+    </g>
+
+    <!-- Tick track (no numbers) -->
+    <g opacity="0.75">
+      <rect x="220" y="140" width="10" height="560" rx="5" fill="#d1dbef"/>
+      <g stroke="#8ea2c8" stroke-width="3" stroke-linecap="round">
+        <!-- Major ticks -->
+        <line x1="220" y1="170" x2="246" y2="170"/>
+        <line x1="220" y1="250" x2="246" y2="250"/>
+        <line x1="220" y1="330" x2="246" y2="330"/>
+        <line x1="220" y1="410" x2="246" y2="410"/>
+        <line x1="220" y1="490" x2="246" y2="490"/>
+        <line x1="220" y1="570" x2="246" y2="570"/>
+        <line x1="220" y1="650" x2="246" y2="650"/>
+        <!-- Minor ticks -->
+        <line x1="220" y1="210" x2="238" y2="210"/>
+        <line x1="220" y1="290" x2="238" y2="290"/>
+        <line x1="220" y1="370" x2="238" y2="370"/>
+        <line x1="220" y1="450" x2="238" y2="450"/>
+        <line x1="220" y1="530" x2="238" y2="530"/>
+        <line x1="220" y1="610" x2="238" y2="610"/>
+        <line x1="220" y1="690" x2="238" y2="690"/>
+      </g>
+    </g>
+
+    <!-- Gloss highlight -->
+    <path d="M126 92
+             C112 112 112 148 112 176
+             L112 690
+             C112 712 118 730 134 742
+             C118 758 108 788 108 824
+             C108 850 120 872 142 882
+             C112 866 96 840 96 808
+             L96 176
+             C96 132 108 104 126 92 Z"
+          fill="url(#highlightGrad)"/>
+
+    <!-- Base pedestal -->
+    <path d="M92 870
+             C92 858 102 848 114 848
+             L206 848
+             C218 848 228 858 228 870
+             L228 892
+             C228 904 218 914 206 914
+             L114 914
+             C102 914 92 904 92 892 Z"
+          fill="url(#outerGrad)" stroke="#9fb3d8" stroke-width="3"/>
+  </g>
+
+  <!-- Placeholder group for your animated fill. It's clipped to the tube+bulb. -->
+  <g id="fill-area" clip-path="url(#thermoFillClip)"></g>
+</svg>
