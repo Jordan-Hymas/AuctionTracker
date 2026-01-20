@@ -6,7 +6,7 @@ import LogoDisplay from '../components/display/LogoDisplay';
 import PaddleNumberDisplay from '../components/display/PaddleNumberDisplay';
 import AnimatedBackground from '../components/display/AnimatedBackground';
 import UpdateFlash from '../components/display/UpdateFlash';
-import MoneyGrowthBar from '../components/display/MoneyGrowthBar';
+// MoneyGrowthBar removed - using static thermometer image instead
 import CurrentLevelDisplay from '../components/display/CurrentLevelDisplay';
 import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
 
@@ -118,112 +118,129 @@ export default function Display() {
           </div>
         )}
 
-        {/* Main Content Grid */}
+        {/* Main Elements Container - Centered */}
         <div
-          className="content-grid"
+          className="main-elements"
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 450px), 1fr))',
-            columnGap: 'clamp(2rem, 4vw, 6rem)',
-            rowGap: 'clamp(2rem, 3vh, 4rem)',
+            display: 'flex',
             alignItems: 'center',
-            justifyItems: 'center',
-            maxWidth: 'min(95vw, 3200px)',
+            justifyContent: 'center',
             width: '100%',
-            margin: '0 auto',
           }}
         >
-          {/* LEFT: Paddle Number Display */}
+          {/* Main Content Grid */}
           <div
+            className="content-grid"
             style={{
-              height: '100%',
               display: 'flex',
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              gap: 'clamp(2rem, 4vw, 6rem)',
             }}
           >
-            <PaddleNumberDisplay
-              lastBid={lastBid}
-              currentDonationLevel={settings?.currentDonationLevel || null}
-              themeName={themeName}
-            />
-          </div>
-
-          {/* CENTER: Total & Goal */}
-          <div
-            style={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(2rem, 3vw, 4rem)',
-            }}
-          >
-            {/* Total Display with Glow */}
+            {/* LEFT: Paddle Number Display */}
             <div
               style={{
-                position: 'relative',
-                animation: 'fadeIn 1s ease-out 0.2s backwards',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 'clamp(8rem, 15vw, 25rem)',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '150%',
-                  height: '150%',
-                  background: `radial-gradient(circle, ${
-                    themeName === 'boysGirlsClub'
-                      ? 'rgba(0, 133, 202, 0.4)'
-                      : 'rgba(59, 130, 246, 0.3)'
-                  }, transparent)`,
-                  filter: 'blur(60px)',
-                  animation: 'pulse 4s ease-in-out infinite',
-                  zIndex: -1,
-                }}
-              />
-              <TotalDisplay
-                total={currentTotal}
-                color={secondaryColor}
-                labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+              <PaddleNumberDisplay
+                lastBid={lastBid}
+                currentDonationLevel={settings?.currentDonationLevel || null}
                 themeName={themeName}
               />
             </div>
 
-            {/* Goal Display */}
-            {goalAmount && (
-              <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
-                <GoalDisplay
-                  goalAmount={goalAmount}
-                  color={themeName === 'boysGirlsClub' ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+            {/* CENTER: Thermometer with Total & Goal overlaid on left */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 'clamp(-2rem, -2vw, -4rem)',
+                animation: 'fadeIn 1s ease-out 0.6s backwards',
+              }}
+            >
+            {/* Total & Goal positioned on left side of thermometer */}
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translateX(-100%) translateY(-50%)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                gap: 'clamp(1.5rem, 2vw, 3rem)',
+                zIndex: 2,
+              }}
+            >
+              {/* Total Display with Glow */}
+              <div
+                style={{
+                  position: 'relative',
+                  animation: 'fadeIn 1s ease-out 0.2s backwards',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '150%',
+                    height: '150%',
+                    background: `radial-gradient(circle, ${
+                      themeName === 'boysGirlsClub'
+                        ? 'rgba(0, 133, 202, 0.4)'
+                        : 'rgba(59, 130, 246, 0.3)'
+                    }, transparent)`,
+                    filter: 'blur(60px)',
+                    animation: 'pulse 4s ease-in-out infinite',
+                    zIndex: -1,
+                  }}
+                />
+                <TotalDisplay
+                  total={currentTotal}
+                  color={secondaryColor}
                   labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                   themeName={themeName}
                 />
               </div>
-            )}
 
-            {/* Animated Progress Bar (if goal set) */}
-            {goalAmount && (
-              <div
-                style={{
-                  width: '100%',
-                  maxWidth: 'min(800px, 90vw)',
-                  animation: 'fadeIn 1s ease-out 0.6s backwards',
-                }}
-              >
-                <MoneyGrowthBar
-                  currentTotal={currentTotal}
-                  goalAmount={goalAmount}
-                  startingTotal={startingTotal}
-                  primaryColor={primaryColor}
-                  progressBarGradient={settings?.themeProgressBarGradient}
-                  themeName={themeName}
-                />
-              </div>
-            )}
+              {/* Goal Display */}
+              {goalAmount && (
+                <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
+                  <GoalDisplay
+                    goalAmount={goalAmount}
+                    color={themeName === 'boysGirlsClub' ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+                    labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                    themeName={themeName}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Thermometer Image - larger size */}
+            <img
+              src="/thermometer.png"
+              alt="Fundraising Thermometer"
+              className="thermometer-image"
+              style={{
+                height: 'clamp(400px, 70vh, 900px)',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                marginLeft: 'clamp(6rem, 12vw, 18rem)',
+              }}
+              />
+            </div>
           </div>
         </div>
       </div>
