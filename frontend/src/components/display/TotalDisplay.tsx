@@ -21,7 +21,11 @@ export default function TotalDisplay({ total, label = 'Total Raised', color = '#
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+    <div style={{
+      textAlign: 'center',
+      marginBottom: '3rem',
+      minWidth: '12ch',
+    }}>
       <div
         style={{
           fontSize: 'clamp(1.5rem, 3vmin, 3rem)',
@@ -45,6 +49,8 @@ export default function TotalDisplay({ total, label = 'Total Raised', color = '#
             : '0 4px 20px rgba(37, 99, 235, 0.12)',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           letterSpacing: '-0.02em',
+          fontVariantNumeric: 'tabular-nums',
+          transform: 'translateZ(0)',
         }}
       >
         {formatCurrency(value)}

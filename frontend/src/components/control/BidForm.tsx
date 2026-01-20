@@ -50,6 +50,12 @@ export default function BidForm({ theme }: BidFormProps) {
       return;
     }
 
+    // Validate paddle number is 1-3 digits only
+    if (!/^\d{1,3}$/.test(paddleNumber.trim())) {
+      setError('Paddle number must be 1-3 digits (0-999)');
+      return;
+    }
+
     let bidAmount: number;
 
     if (useCustomAmount) {
@@ -242,8 +248,15 @@ export default function BidForm({ theme }: BidFormProps) {
           <input
             ref={inputRef}
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={3}
             value={paddleNumber}
-            onChange={(e) => setPaddleNumber(e.target.value)}
+            onChange={(e) => {
+              // Only allow digits
+              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+              setPaddleNumber(value);
+            }}
             placeholder="e.g., 134"
             disabled={isSubmitting}
             style={{

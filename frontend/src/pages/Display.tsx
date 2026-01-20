@@ -6,8 +6,6 @@ import LogoDisplay from '../components/display/LogoDisplay';
 import PaddleNumberDisplay from '../components/display/PaddleNumberDisplay';
 import AnimatedBackground from '../components/display/AnimatedBackground';
 import UpdateFlash from '../components/display/UpdateFlash';
-// MoneyGrowthBar removed - using static thermometer image instead
-import CurrentLevelDisplay from '../components/display/CurrentLevelDisplay';
 import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
 
 export default function Display() {
@@ -57,6 +55,21 @@ export default function Display() {
   const themeName = settings?.themeName || 'boysGirlsClub';
   const primaryColor = settings?.themePrimaryColor || '#2563eb';
   const secondaryColor = settings?.themeSecondaryColor || '#3b82f6';
+
+  // Helper function for thermometer progress bar gradient
+  const getThermometerGradient = () => {
+    switch (themeName) {
+      case 'boysGirlsClub':
+        return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
+      case 'modern':
+      case 'NPCE':
+        return 'linear-gradient(to top, #c23a1d, #e24725, #f5633d)';
+      case 'modernDots':
+        return 'linear-gradient(to top, #0891b2, #06b6d4, #22d3ee)';
+      default:
+        return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
+    }
+  };
 
   return (
     <div
@@ -175,10 +188,11 @@ export default function Display() {
                 transform: 'translateX(-100%) translateY(-50%)',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-end',
+                alignItems: 'center',
                 justifyContent: 'center',
                 gap: 'clamp(1.5rem, 2vw, 3rem)',
                 zIndex: 2,
+                minWidth: 'clamp(400px, 40vw, 800px)',
               }}
             >
               {/* Total Display with Glow */}
@@ -186,6 +200,8 @@ export default function Display() {
                 style={{
                   position: 'relative',
                   animation: 'fadeIn 1s ease-out 0.2s backwards',
+                  transform: 'translateZ(0)',
+                  willChange: 'contents',
                 }}
               >
                 <div
@@ -193,7 +209,7 @@ export default function Display() {
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    transform: 'translate(-50%, -50%)',
+                    transform: 'translate(-50%, -50%) translateZ(0)',
                     width: '150%',
                     height: '150%',
                     background: `radial-gradient(circle, ${
@@ -204,6 +220,8 @@ export default function Display() {
                     filter: 'blur(60px)',
                     animation: 'pulse 4s ease-in-out infinite',
                     zIndex: -1,
+                    willChange: 'opacity',
+                    pointerEvents: 'none',
                   }}
                 />
                 <TotalDisplay
@@ -227,19 +245,60 @@ export default function Display() {
               )}
             </div>
 
-            {/* Thermometer Image - larger size */}
-            <img
-              src="/thermometer.png"
-              alt="Fundraising Thermometer"
-              className="thermometer-image"
+            {/* Thermometer Container with Progress Bar */}
+            <div
               style={{
-                height: 'clamp(400px, 70vh, 900px)',
-                width: 'auto',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                position: 'relative',
+                display: 'inline-block',
                 marginLeft: 'clamp(6rem, 12vw, 18rem)',
+                transform: 'translateZ(0)',
               }}
+            >
+              {/* Progress Bar - BEHIND thermometer */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '44%',
+                  width: '12%',
+                  bottom: '12%',
+                  height: '76%',
+                  zIndex: 0,
+                  overflow: 'hidden',
+                  borderRadius: '4px 4px 50% 50%',
+                  transform: 'translateZ(0)',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    width: '100%',
+                    height: `${progress}%`,
+                    background: getThermometerGradient(),
+                    transition: 'height 1.5s ease-out',
+                    boxShadow: 'inset 2px 0 8px rgba(255, 255, 255, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2)',
+                    willChange: 'height',
+                    transform: 'translateZ(0)',
+                  }}
+                />
+              </div>
+
+              {/* Thermometer Image - ON TOP */}
+              <img
+                src="/thermometer.png"
+                alt="Fundraising Thermometer"
+                className="thermometer-image"
+                style={{
+                  position: 'relative',
+                  height: 'clamp(400px, 70vh, 900px)',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                  zIndex: 1,
+                  transform: 'translateZ(0)',
+                }}
               />
+            </div>
             </div>
           </div>
         </div>

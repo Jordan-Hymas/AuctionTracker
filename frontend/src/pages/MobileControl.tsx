@@ -31,6 +31,12 @@ export default function MobileControl() {
       return;
     }
 
+    // Validate paddle number is 1-3 digits only
+    if (!/^\d{1,3}$/.test(paddleNumber.trim())) {
+      setError('Paddle must be 1-3 digits');
+      return;
+    }
+
     let bidAmount: number;
 
     if (useCustomAmount) {
@@ -298,14 +304,17 @@ export default function MobileControl() {
             <input
               ref={inputRef}
               type="search"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={3}
               value={paddleNumber}
               onChange={(e) => {
-                // Only allow numbers
-                const value = e.target.value.replace(/[^0-9]/g, '');
+                // Only allow digits, max 3
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
                 setPaddleNumber(value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Enter number"
+              placeholder="000"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"

@@ -16,7 +16,11 @@ export default function GoalDisplay({ goalAmount, color = '#10b981', labelColor,
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+    <div style={{
+      textAlign: 'center',
+      marginBottom: '3rem',
+      minWidth: '12ch',
+    }}>
       <div
         style={{
           fontSize: 'clamp(1.25rem, 2.5vmin, 2.5rem)',
@@ -37,6 +41,8 @@ export default function GoalDisplay({ goalAmount, color = '#10b981', labelColor,
           textShadow: themeName === 'boysGirlsClub'
             ? '0 0 30px rgba(37, 150, 190, 0.25), 0 0 60px rgba(37, 150, 190, 0.15), 0 4px 15px rgba(0, 0, 0, 0.2)'
             : '0 2px 10px rgba(16, 185, 129, 0.12)',
+          fontVariantNumeric: 'tabular-nums',
+          transform: 'translateZ(0)',
         }}
       >
         {formatCurrency(goalAmount)}
