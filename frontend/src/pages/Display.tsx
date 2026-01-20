@@ -245,7 +245,8 @@ export default function Display() {
               )}
             </div>
 
-            {/* Thermometer Container with Progress Bar */}
+            {/* Thermometer Container with Progress Bar - DO NOT MODIFY PROGRESS BAR POSITIONING */}
+            {/* Progress bar and thermometer are locked together - moving the container moves both */}
             <div
               style={{
                 position: 'relative',
@@ -254,18 +255,18 @@ export default function Display() {
                 transform: 'translateZ(0)',
               }}
             >
-              {/* Progress Bar - BEHIND thermometer */}
+              {/* FINALIZED: Progress Bar - width: 10%, bottom: 9%, height: 80%, borderRadius: 50px 50px 150px 150px */}
               <div
                 style={{
                   position: 'absolute',
-                  left: '44%',
-                  width: '12%',
-                  bottom: '12%',
-                  height: '76%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '10%',
+                  bottom: '9%',
+                  height: '80%',
                   zIndex: 0,
                   overflow: 'hidden',
-                  borderRadius: '4px 4px 50% 50%',
-                  transform: 'translateZ(0)',
+                  borderRadius: '50px 50px 150px 150px',
                 }}
               >
                 <div
@@ -278,14 +279,14 @@ export default function Display() {
                     transition: 'height 1.5s ease-out',
                     boxShadow: 'inset 2px 0 8px rgba(255, 255, 255, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2)',
                     willChange: 'height',
-                    transform: 'translateZ(0)',
+                    borderRadius: '50px 50px 150px 150px',
                   }}
                 />
               </div>
 
               {/* Thermometer Image - ON TOP */}
               <img
-                src="/thermometer.png"
+                src="/Background/thermometerFinal.png"
                 alt="Fundraising Thermometer"
                 className="thermometer-image"
                 style={{
