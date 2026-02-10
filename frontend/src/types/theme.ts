@@ -32,4 +32,12 @@ export const THEMES: Record<string, Theme> = {
     backgroundValue: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%)',
     progressBarGradient: 'linear-gradient(90deg, #06b6d4 0%, #0ea5e9 50%, #06b6d4 100%)',
   },
+  winter: {
+    name: 'Winter',
+    primaryColor: '#2596be',
+    secondaryColor: '#2596be',
+    backgroundType: 'gradient',
+    backgroundValue: 'linear-gradient(180deg, #e8f4fc 0%, #d4ebf7 20%, #b8dff5 40%, #a8d8f0 60%, #c5e5f7 80%, #daeef9 100%)',
+    progressBarGradient: 'linear-gradient(90deg, #2596be 0%, #30a5d0 25%, #40b5e0 50%, #30a5d0 75%, #2596be 100%)',
+  },
 };

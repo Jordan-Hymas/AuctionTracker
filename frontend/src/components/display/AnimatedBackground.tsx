@@ -12,6 +12,17 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
     duration: Math.random() * 10 + 15,
   }));
 
+  // Snowflakes for winter theme - increased count for heavier snow
+  const snowflakes = Array.from({ length: 120 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 5 + 1,
+    left: Math.random() * 100,
+    delay: Math.random() * 15,
+    duration: Math.random() * 10 + 8,
+    opacity: Math.random() * 0.7 + 0.3,
+    drift: Math.random() * 60 - 30, // Wind drift amount
+  }));
+
   // Theme-specific background colors
   const getBackgroundGradient = () => {
     switch (themeName) {
@@ -25,7 +36,66 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
   return (
     <>
       {/* Animated Gradient Background */}
-      {themeName === 'modern' || themeName === 'boysGirlsClub' ? (
+      {themeName === 'winter' ? (
+        <>
+          {/* Winter background image */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: -2,
+              backgroundImage: 'url(/Background/winterBackground.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+          />
+                    {/* Ice shimmer overlay */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: -1,
+              background: `
+                radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 30%),
+                radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 25%),
+                radial-gradient(ellipse at 50% 90%, rgba(200,230,255,0.08) 0%, transparent 20%)
+              `,
+              animation: 'iceShimmer 6s ease-in-out infinite',
+              pointerEvents: 'none',
+            }}
+          />
+          {/* Frost particles */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: -1,
+              background: `
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 1px),
+                radial-gradient(circle at 30% 10%, rgba(255,255,255,0.5) 0%, transparent 1px),
+                radial-gradient(circle at 70% 15%, rgba(255,255,255,0.7) 0%, transparent 1px),
+                radial-gradient(circle at 90% 25%, rgba(255,255,255,0.4) 0%, transparent 1px),
+                radial-gradient(circle at 15% 50%, rgba(255,255,255,0.5) 0%, transparent 1px),
+                radial-gradient(circle at 85% 55%, rgba(255,255,255,0.6) 0%, transparent 1px),
+                radial-gradient(circle at 25% 80%, rgba(255,255,255,0.4) 0%, transparent 1px),
+                radial-gradient(circle at 75% 85%, rgba(255,255,255,0.5) 0%, transparent 1px)
+              `,
+              animation: 'frostSparkle 3s ease-in-out infinite',
+              pointerEvents: 'none',
+            }}
+          />
+        </>
+      ) : themeName === 'modern' || themeName === 'boysGirlsClub' ? (
         <div
           style={{
             position: 'fixed',
@@ -290,7 +360,41 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
       )}
 
       {/* Floating Particles */}
-      {themeName === 'modernDots' ? (
+      {themeName === 'winter' ? (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+          }}
+        >
+          {snowflakes.map((flake) => (
+            <div
+              key={flake.id}
+              style={{
+                position: 'absolute',
+                left: `${flake.left}%`,
+                top: '-5%',
+                width: `${flake.size}px`,
+                height: `${flake.size}px`,
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.95)',
+                opacity: flake.opacity,
+                animation: `snowfallWithWind ${flake.duration}s linear infinite`,
+                animationDelay: `${flake.delay}s`,
+                boxShadow: '0 0 6px rgba(255, 255, 255, 0.9), 0 0 12px rgba(200, 230, 255, 0.5)',
+                // @ts-ignore
+                '--drift': `${flake.drift}px`,
+              }}
+            />
+          ))}
+        </div>
+      ) : themeName === 'modernDots' ? (
         <div
           style={{
             position: 'fixed',
@@ -321,7 +425,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
             />
           ))}
         </div>
-      ) : themeName !== 'modern' && (
+      ) : themeName !== 'modern' && themeName !== 'winter' && (
         <div
           style={{
             position: 'fixed',
@@ -355,7 +459,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
       )}
 
       {/* Glowing Orbs */}
-      {themeName !== 'modern' && (
+      {themeName !== 'modern' && themeName !== 'winter' && (
         <>
           <div
             style={{

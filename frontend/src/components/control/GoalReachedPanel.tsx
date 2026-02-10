@@ -111,9 +111,9 @@ export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
             disabled={isSaving}
             style={{
               padding: '0.75rem',
-              backgroundColor: !enabled ? theme.colors.primary : theme.colors.inputBg,
+              backgroundColor: !enabled ? theme.colors.blue : theme.colors.inputBg,
               color: !enabled ? '#ffffff' : theme.colors.textSecondary,
-              border: `2px solid ${!enabled ? theme.colors.primary : theme.colors.inputBorder}`,
+              border: `2px solid ${!enabled ? theme.colors.blue : theme.colors.inputBorder}`,
               borderRadius: '6px',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -210,7 +210,7 @@ export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
         style={{
           width: '100%',
           padding: '0.875rem',
-          backgroundColor: isSaving ? theme.colors.buttonDisabled : (enabled ? '#10b981' : theme.colors.primary),
+          backgroundColor: isSaving ? theme.colors.textMuted : (enabled ? '#10b981' : theme.colors.blue),
           color: '#ffffff',
           border: 'none',
           borderRadius: '6px',

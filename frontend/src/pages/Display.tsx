@@ -60,6 +60,7 @@ export default function Display() {
   const getThermometerGradient = () => {
     switch (themeName) {
       case 'boysGirlsClub':
+      case 'winter':
         return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
       case 'modern':
       case 'NPCE':
@@ -232,7 +233,7 @@ export default function Display() {
                 <TotalDisplay
                   total={currentTotal}
                   color={secondaryColor}
-                  labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                  labelColor={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                   themeName={themeName}
                 />
               </div>
@@ -242,8 +243,8 @@ export default function Display() {
                 <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
                   <GoalDisplay
                     goalAmount={goalAmount}
-                    color={themeName === 'boysGirlsClub' ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
-                    labelColor={themeName === 'boysGirlsClub' ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                    color={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+                    labelColor={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                     themeName={themeName}
                   />
                 </div>
@@ -399,7 +400,7 @@ export default function Display() {
                   transform: 'translateX(calc(-50% + 2px))',
                   fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
                   fontWeight: '900',
-                  color: themeName === 'boysGirlsClub' ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
+                  color: (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
                   textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 -1px 2px rgba(255,255,255,0.8)',
                   zIndex: 10,
                   whiteSpace: 'nowrap',
@@ -442,17 +443,17 @@ export default function Display() {
             left: 'clamp(1rem, 2vw, 2rem)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
             backgroundColor:
-              themeName === 'boysGirlsClub'
+              (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)',
             backdropFilter: 'blur(10px)',
-            border: `2px solid ${themeName === 'boysGirlsClub' ? '#0085CA' : '#3b82f6'}`,
+            border: `2px solid ${(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#0085CA' : '#3b82f6'}`,
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: 'clamp(1rem, 3vw, 1.5rem)',
             color: '#ffffff',
             boxShadow:
-              themeName === 'boysGirlsClub'
+              (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? '0 4px 12px rgba(0, 133, 202, 0.5)'
                 : '0 4px 12px rgba(59, 130, 246, 0.5)',
             zIndex: 100,
@@ -460,14 +461,14 @@ export default function Display() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              themeName === 'boysGirlsClub'
+              (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.4)'
                 : 'rgba(59, 130, 246, 0.4)';
             e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor =
-              themeName === 'boysGirlsClub'
+              (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)';
             e.currentTarget.style.transform = 'scale(1)';
@@ -561,6 +562,118 @@ export default function Display() {
             50% {
               transform: scaleX(1.1) scaleY(0.8);
               opacity: 0.9;
+            }
+          }
+
+          /* Winter theme animations */
+          @keyframes snowfallWithWind {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0;
+            }
+            5% {
+              opacity: 1;
+            }
+            25% {
+              transform: translateY(27vh) translateX(15px);
+            }
+            50% {
+              transform: translateY(55vh) translateX(-10px);
+            }
+            75% {
+              transform: translateY(82vh) translateX(20px);
+            }
+            95% {
+              opacity: 0.7;
+            }
+            100% {
+              transform: translateY(110vh) translateX(5px);
+              opacity: 0;
+            }
+          }
+
+          @keyframes windStreaks {
+            0% {
+              transform: translateX(-100%);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+            }
+            90% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+          }
+
+          @keyframes iceShimmer {
+            0%, 100% {
+              opacity: 0.3;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.6;
+              transform: scale(1.05);
+            }
+          }
+
+          @keyframes frostSparkle {
+            0%, 100% {
+              opacity: 0.3;
+            }
+            25% {
+              opacity: 0.8;
+            }
+            50% {
+              opacity: 0.4;
+            }
+            75% {
+              opacity: 0.9;
+            }
+          }
+
+          @keyframes winterSwirl1 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.8;
+            }
+            50% {
+              transform: translate(30px, 20px) rotate(5deg);
+              opacity: 1;
+            }
+          }
+
+          @keyframes winterSwirl2 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.7;
+            }
+            50% {
+              transform: translate(-20px, 30px) rotate(-5deg);
+              opacity: 0.9;
+            }
+          }
+
+          @keyframes shimmer {
+            0%, 100% {
+              opacity: 0.6;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
+
+          @keyframes sparkle {
+            0%, 100% {
+              opacity: 0.4;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.8;
+              transform: scale(1.1);
             }
           }
 

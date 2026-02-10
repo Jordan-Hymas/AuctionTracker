@@ -51,10 +51,10 @@ export default function MoneyGrowthBar({
         // Create enhanced particle burst (60-80 particles)
         const newParticles: Particle[] = [];
         const particleCount = Math.floor(Math.random() * 21) + 60; // 60-80 particles
-        const accentColors = themeName === 'boysGirlsClub'
+        const accentColors = (themeName === 'boysGirlsClub' || themeName === 'winter')
           ? ['#2596be', '#30a5d0', '#40b5e0']
           : ['#e24725', '#ff5a3d', '#ff7355'];
-        const baseColor = themeName === 'boysGirlsClub' ? '#1b5a7d' : '#1b3664';
+        const baseColor = (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#1b5a7d' : '#1b3664';
         const particleTypes: ('spark' | 'glow' | 'dot')[] = ['spark', 'glow', 'dot'];
 
         for (let i = 0; i < particleCount; i++) {
@@ -551,10 +551,10 @@ export default function MoneyGrowthBar({
               transform: 'translateX(-50%)',
               fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
               fontWeight: '900',
-              color: themeName === 'modern' ? '#e24725' : themeName === 'boysGirlsClub' ? '#2596be' : '#fbbf24',
+              color: themeName === 'modern' ? '#e24725' : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : '#fbbf24',
               textShadow: themeName === 'modern'
                 ? '0 0 30px rgba(226, 71, 37, 0.4), 0 4px 12px rgba(0, 0, 0, 0.4)'
-                : themeName === 'boysGirlsClub'
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? '0 0 30px rgba(37, 150, 190, 0.4), 0 4px 12px rgba(0, 0, 0, 0.4)'
                 : '0 0 30px rgba(251, 191, 36, 0.4), 0 4px 12px rgba(0, 0, 0, 0.4)',
               animation: 'floatUpFade 2s ease-out forwards',

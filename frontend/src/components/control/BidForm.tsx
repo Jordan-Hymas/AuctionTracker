@@ -257,6 +257,12 @@ export default function BidForm({ theme }: BidFormProps) {
               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
               setPaddleNumber(value);
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit(e as unknown as React.FormEvent);
+              }
+            }}
             placeholder="e.g., 134"
             disabled={isSubmitting}
             style={{

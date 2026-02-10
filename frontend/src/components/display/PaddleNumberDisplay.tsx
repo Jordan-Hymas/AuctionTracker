@@ -96,7 +96,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
           fontWeight: '800',
           color: themeName === 'modern'
             ? '#1b3664'
-            : themeName === 'boysGirlsClub'
+            : (themeName === 'boysGirlsClub' || themeName === 'winter')
             ? '#000000'
             : 'rgba(255, 255, 255, 0.95)',
           letterSpacing: '0.3em',
@@ -104,7 +104,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
           textTransform: 'uppercase',
           textShadow: themeName === 'modern'
             ? '0 0 20px rgba(27, 54, 100, 0.15), 0 2px 4px rgba(0, 0, 0, 0.2)'
-            : themeName === 'boysGirlsClub'
+            : (themeName === 'boysGirlsClub' || themeName === 'winter')
             ? '0 2px 4px rgba(0, 0, 0, 0.2)'
             : '0 0 20px rgba(59, 130, 246, 0.18)',
           animation: isNew ? 'slideInLeft 0.5s ease-out' : 'none',
@@ -118,7 +118,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
         style={{
           fontSize: 'clamp(12rem, 28vmin, 32rem)',
           fontWeight: '900',
-          color: themeName === 'boysGirlsClub' ? '#2596be' : '#ffffff',
+          color: (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : '#ffffff',
           lineHeight: '1',
           textShadow: themeName === 'modern'
             ? `
@@ -126,7 +126,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
               0 0 80px rgba(27, 54, 100, 0.12),
               0 4px 20px rgba(0, 0, 0, 0.5)
             `
-            : themeName === 'boysGirlsClub'
+            : (themeName === 'boysGirlsClub' || themeName === 'winter')
             ? `
               0 0 30px rgba(37, 150, 190, 0.25),
               0 0 60px rgba(37, 150, 190, 0.15),
@@ -154,7 +154,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
             fontWeight: '800',
             color: themeName === 'modern'
               ? '#e24725'
-              : themeName === 'boysGirlsClub'
+              : (themeName === 'boysGirlsClub' || themeName === 'winter')
               ? '#2596be'
               : '#fbbf24',
             textShadow: themeName === 'modern'
@@ -163,7 +163,7 @@ export default function PaddleNumberDisplay({ lastBid, currentDonationLevel, the
                 0 0 80px rgba(226, 71, 37, 0.15),
                 0 4px 15px rgba(0, 0, 0, 0.5)
               `
-              : themeName === 'boysGirlsClub'
+              : (themeName === 'boysGirlsClub' || themeName === 'winter')
               ? `
                 0 0 30px rgba(37, 150, 190, 0.25),
                 0 0 60px rgba(37, 150, 190, 0.15),
