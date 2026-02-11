@@ -92,6 +92,26 @@ export function initializeDatabase() {
     db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_message TEXT DEFAULT NULL`);
   }
 
+  if (!columnNames.includes('custom_background_path')) {
+    console.log('🔄 Adding custom_background_path column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN custom_background_path TEXT DEFAULT NULL`);
+  }
+
+  if (!columnNames.includes('custom_primary_color')) {
+    console.log('🔄 Adding custom_primary_color column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN custom_primary_color TEXT DEFAULT '#2596be'`);
+  }
+
+  if (!columnNames.includes('custom_secondary_color')) {
+    console.log('🔄 Adding custom_secondary_color column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN custom_secondary_color TEXT DEFAULT '#2596be'`);
+  }
+
+  if (!columnNames.includes('custom_color_preset')) {
+    console.log('🔄 Adding custom_color_preset column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN custom_color_preset TEXT DEFAULT NULL`);
+  }
+
   // Insert default settings if not exists
   const settingsCount = db.prepare('SELECT COUNT(*) as count FROM settings').get() as { count: number };
   if (settingsCount.count === 0) {

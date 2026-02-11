@@ -72,6 +72,22 @@ export const uploadApi = {
   deleteLogo: async (): Promise<void> => {
     await api.delete('/upload/logo');
   },
+
+  uploadBackground: async (file: File): Promise<{ backgroundUrl: string }> => {
+    const formData = new FormData();
+    formData.append('background', file);
+
+    const response = await api.post('/upload/background', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteBackground: async (): Promise<void> => {
+    await api.delete('/upload/background');
+  },
 };
 
 // ==================== EXPORT API ====================

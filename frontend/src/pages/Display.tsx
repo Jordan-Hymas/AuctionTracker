@@ -7,6 +7,7 @@ import PaddleNumberDisplay from '../components/display/PaddleNumberDisplay';
 import AnimatedBackground from '../components/display/AnimatedBackground';
 import UpdateFlash from '../components/display/UpdateFlash';
 import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
+import { generateThermometerGradient, hexToRgba, darkenColor } from '../utils/colorUtils';
 
 export default function Display() {
   const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, lastUpdateTime, isConnected } = useAuction();
@@ -67,6 +68,8 @@ export default function Display() {
         return 'linear-gradient(to top, #c23a1d, #e24725, #f5633d)';
       case 'modernDots':
         return 'linear-gradient(to top, #0891b2, #06b6d4, #22d3ee)';
+      case 'custom':
+        return generateThermometerGradient(secondaryColor);
       default:
         return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
     }
@@ -90,7 +93,7 @@ export default function Display() {
       }}
     >
       {/* Animated Background */}
-      <AnimatedBackground themeName={themeName} />
+      <AnimatedBackground themeName={themeName} customBackgroundUrl={settings?.customBackgroundPath} />
 
       {/* Conditional Rendering: Goal Reached Display or Normal Display */}
       {settings?.goalReachedEnabled ? (
@@ -171,6 +174,8 @@ export default function Display() {
                 lastBid={lastBid}
                 currentDonationLevel={settings?.currentDonationLevel || null}
                 themeName={themeName}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
               />
             </div>
 
@@ -219,7 +224,9 @@ export default function Display() {
                     width: '150%',
                     height: '150%',
                     background: `radial-gradient(circle, ${
-                      themeName === 'boysGirlsClub'
+                      themeName === 'custom'
+                        ? hexToRgba(secondaryColor, 0.3)
+                        : themeName === 'boysGirlsClub'
                         ? 'rgba(0, 133, 202, 0.4)'
                         : 'rgba(59, 130, 246, 0.3)'
                     }, transparent)`,
@@ -233,7 +240,7 @@ export default function Display() {
                 <TotalDisplay
                   total={currentTotal}
                   color={secondaryColor}
-                  labelColor={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                  labelColor={themeName === 'custom' ? (settings?.customBackgroundPath ? '#ffffff' : primaryColor) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                   themeName={themeName}
                 />
               </div>
@@ -243,8 +250,8 @@ export default function Display() {
                 <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
                   <GoalDisplay
                     goalAmount={goalAmount}
-                    color={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
-                    labelColor={(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                    color={themeName === 'custom' ? secondaryColor : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+                    labelColor={themeName === 'custom' ? (settings?.customBackgroundPath ? '#ffffff' : primaryColor) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                     themeName={themeName}
                   />
                 </div>
@@ -400,7 +407,7 @@ export default function Display() {
                   transform: 'translateX(calc(-50% + 2px))',
                   fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
                   fontWeight: '900',
-                  color: (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
+                  color: themeName === 'custom' ? darkenColor(secondaryColor, 0.25) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
                   textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 -1px 2px rgba(255,255,255,0.8)',
                   zIndex: 10,
                   whiteSpace: 'nowrap',
@@ -443,17 +450,21 @@ export default function Display() {
             left: 'clamp(1rem, 2vw, 2rem)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
             backgroundColor:
-              (themeName === 'boysGirlsClub' || themeName === 'winter')
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.2)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)',
             backdropFilter: 'blur(10px)',
-            border: `2px solid ${(themeName === 'boysGirlsClub' || themeName === 'winter') ? '#0085CA' : '#3b82f6'}`,
+            border: `2px solid ${themeName === 'custom' ? primaryColor : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#0085CA' : '#3b82f6'}`,
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: 'clamp(1rem, 3vw, 1.5rem)',
             color: '#ffffff',
             boxShadow:
-              (themeName === 'boysGirlsClub' || themeName === 'winter')
+              themeName === 'custom'
+                ? `0 4px 12px ${hexToRgba(primaryColor, 0.5)}`
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? '0 4px 12px rgba(0, 133, 202, 0.5)'
                 : '0 4px 12px rgba(59, 130, 246, 0.5)',
             zIndex: 100,
@@ -461,14 +472,18 @@ export default function Display() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              (themeName === 'boysGirlsClub' || themeName === 'winter')
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.4)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.4)'
                 : 'rgba(59, 130, 246, 0.4)';
             e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor =
-              (themeName === 'boysGirlsClub' || themeName === 'winter')
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.2)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)';
             e.currentTarget.style.transform = 'scale(1)';

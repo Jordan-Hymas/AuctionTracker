@@ -2,14 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuction } from '../context/AuctionContext';
 
 export default function MobileControl() {
-  const { addBid, settings, currentTotal, undoLastBid } = useAuction();
+  const { addBid, settings, currentTotal, undoLastBid, updateSettings } = useAuction();
   const [paddleNumber, setPaddleNumber] = useState('');
   const [useCustomAmount, setUseCustomAmount] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [confirmUndo, setConfirmUndo] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
 
@@ -31,9 +32,9 @@ export default function MobileControl() {
       return;
     }
 
-    // Validate paddle number is 1-3 digits only
-    if (!/^\d{1,3}$/.test(paddleNumber.trim())) {
-      setError('Paddle must be 1-3 digits');
+    // Validate paddle number is 1-4 digits only
+    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
+      setError('Paddle must be 1-4 digits');
       return;
     }
 
@@ -78,7 +79,7 @@ export default function MobileControl() {
   };
 
   // Handle Enter/Go key press
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' || e.key === 'Go') {
       e.preventDefault();
       handleSubmit();
@@ -175,6 +176,66 @@ export default function MobileControl() {
             }}
           >
             ✓ Bid Added!
+          </div>
+        )}
+
+        {/* Active Level Selector */}
+        {!useCustomAmount && settings?.donationLevels && settings.donationLevels.length > 0 && (
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '2px solid #e5e7eb',
+              borderRadius: '16px',
+              padding: '1rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8125rem',
+                fontWeight: '700',
+                color: '#475569',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '0.75rem',
+              }}
+            >
+              Active Level
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                gap: '0.5rem',
+              }}
+            >
+              {settings.donationLevels.map((level) => {
+                const isActive = currentLevel === level;
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => updateSettings({ currentDonationLevel: level })}
+                    style={{
+                      padding: '0.875rem 0.5rem',
+                      backgroundColor: isActive ? '#0f766e' : '#f8fafc',
+                      color: isActive ? '#ffffff' : '#374151',
+                      border: isActive ? '2px solid #0d6356' : '2px solid #d1d5db',
+                      borderRadius: '10px',
+                      fontSize: '1.125rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: isActive ? '0 4px 8px rgba(15, 118, 110, 0.3)' : 'none',
+                      WebkitAppearance: 'none',
+                      appearance: 'none',
+                      touchAction: 'manipulation',
+                    }}
+                  >
+                    {formatCurrency(level)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -301,24 +362,20 @@ export default function MobileControl() {
             >
               Paddle Number
             </label>
-            <input
+            <textarea
               ref={inputRef}
-              type="search"
+              rows={1}
               inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={3}
+              maxLength={4}
               value={paddleNumber}
               onChange={(e) => {
-                // Only allow digits, max 3
-                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+                // Only allow digits, max 4
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
                 setPaddleNumber(value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="000"
+              placeholder="0000"
               autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck="false"
               enterKeyHint="go"
               style={{
                 width: '100%',
@@ -332,6 +389,10 @@ export default function MobileControl() {
                 WebkitAppearance: 'none',
                 appearance: 'none',
                 boxSizing: 'border-box',
+                resize: 'none',
+                overflow: 'hidden',
+                lineHeight: '1.2',
+                fontFamily: 'inherit',
               }}
             />
           </div>
@@ -371,26 +432,77 @@ export default function MobileControl() {
           </button>
 
           {/* Undo Button */}
-          <button
-            type="button"
-            onClick={undoLastBid}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              border: '2px solid #b91c1c',
-              borderRadius: '12px',
-              backgroundColor: '#ffffff',
-              color: '#b91c1c',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              WebkitAppearance: 'none',
-              appearance: 'none',
-              boxSizing: 'border-box',
-            }}
-          >
-            Undo Last Bid
-          </button>
+          {confirmUndo ? (
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  undoLastBid();
+                  setConfirmUndo(false);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '1rem',
+                  border: 'none',
+                  borderRadius: '12px',
+                  backgroundColor: '#b91c1c',
+                  color: '#ffffff',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  boxSizing: 'border-box',
+                  touchAction: 'manipulation',
+                }}
+              >
+                Yes, Undo
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmUndo(false)}
+                style={{
+                  flex: 1,
+                  padding: '1rem',
+                  border: '2px solid #d1d5db',
+                  borderRadius: '12px',
+                  backgroundColor: '#ffffff',
+                  color: '#374151',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  boxSizing: 'border-box',
+                  touchAction: 'manipulation',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmUndo(true)}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                border: '2px solid #b91c1c',
+                borderRadius: '12px',
+                backgroundColor: '#ffffff',
+                color: '#b91c1c',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                boxSizing: 'border-box',
+                touchAction: 'manipulation',
+              }}
+            >
+              Undo Last Bid
+            </button>
+          )}
         </div>
       </div>
     </div>

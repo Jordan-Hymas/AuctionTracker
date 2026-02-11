@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useAnimatedValue } from '../../hooks/useAnimatedValue';
 import LogoDisplay from './LogoDisplay';
+import { lightenColor } from '../../utils/colorUtils';
 
 interface GoalReachedDisplayProps {
   displayTotal: number;
@@ -25,7 +26,10 @@ interface ConfettiPiece {
 }
 
 // Theme color palette selector
-const getColorPalette = (theme: string): string[] => {
+const getColorPalette = (theme: string, primaryColor?: string, secondaryColor?: string): string[] => {
+  if (theme === 'custom' && primaryColor && secondaryColor) {
+    return [primaryColor, secondaryColor, lightenColor(primaryColor, 0.3), lightenColor(secondaryColor, 0.3), '#FFFFFF'];
+  }
   const palettes: Record<string, string[]> = {
     boysGirlsClub: ['#2596be', '#30a5d0', '#40b5e0', '#1b5a7d', '#FFFFFF'],
     modern: ['#e24725', '#ff5a3d', '#ff7355', '#1b3664', '#FFFFFF'],
@@ -67,7 +71,7 @@ export default function GoalReachedDisplay({ displayTotal, message, themeName, p
   const { value } = useAnimatedValue(displayTotal, 1500);
 
   // Get theme color palette and generate confetti
-  const colors = useMemo(() => getColorPalette(themeName), [themeName]);
+  const colors = useMemo(() => getColorPalette(themeName, primaryColor, secondaryColor), [themeName, primaryColor, secondaryColor]);
   const confetti = useMemo(() => generateConfetti(120, colors), [colors]);
 
   const formatCurrency = (amount: number): string => {

@@ -14,7 +14,7 @@ export default function BidForm({ theme }: BidFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
 
@@ -40,8 +40,8 @@ export default function BidForm({ theme }: BidFormProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError('');
     setSuccess(false);
 
@@ -50,9 +50,9 @@ export default function BidForm({ theme }: BidFormProps) {
       return;
     }
 
-    // Validate paddle number is 1-3 digits only
-    if (!/^\d{1,3}$/.test(paddleNumber.trim())) {
-      setError('Paddle number must be 1-3 digits (0-999)');
+    // Validate paddle number is 1-4 digits only
+    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
+      setError('Paddle number must be 1-4 digits (0-9999)');
       return;
     }
 
@@ -145,7 +145,7 @@ export default function BidForm({ theme }: BidFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <div role="presentation">
         {/* Current Selected Level Display */}
         {!useCustomAmount && (
           <div
@@ -245,26 +245,26 @@ export default function BidForm({ theme }: BidFormProps) {
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
             Paddle Number *
           </label>
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
             inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={3}
+            maxLength={4}
             value={paddleNumber}
             onChange={(e) => {
-              // Only allow digits
-              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+              const value = e.target.value.replace(/\D/g, '').slice(0, 4);
               setPaddleNumber(value);
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSubmit(e as unknown as React.FormEvent);
+                handleSubmit();
               }
             }}
             placeholder="e.g., 134"
             disabled={isSubmitting}
+            autoComplete="off"
+            autoFocus
             style={{
               width: '100%',
               padding: '0.625rem',
@@ -274,13 +274,17 @@ export default function BidForm({ theme }: BidFormProps) {
               backgroundColor: theme.colors.inputBg,
               color: theme.colors.textPrimary,
               transition: 'all 0.2s',
+              resize: 'none',
+              overflow: 'hidden',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
             }}
-            autoFocus
           />
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleSubmit}
           disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
           style={{
             width: '100%',
@@ -313,7 +317,7 @@ export default function BidForm({ theme }: BidFormProps) {
         >
           {isSubmitting ? 'Submitting...' : 'Submit Bid'}
         </button>
-      </form>
+      </div>
     </div>
   );
 }

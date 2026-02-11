@@ -57,7 +57,7 @@ export default function CurrentLevelSelector({ theme }: CurrentLevelSelectorProp
             transition: 'color 0.2s',
           }}
         >
-          No donation levels configured. Add levels below to get started.
+          No donation levels configured. Add levels in the Setup tab to get started.
         </p>
       </div>
     );

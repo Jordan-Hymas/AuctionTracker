@@ -121,7 +121,7 @@ export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
               transition: 'all 0.2s',
             }}
           >
-            Normal
+            Fundraiser
           </button>
           <button
             onClick={() => setEnabled(true)}

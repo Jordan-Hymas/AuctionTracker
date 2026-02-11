@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuction } from '../../context/AuctionContext';
 import { THEMES } from '../../types/theme';
 import { ControlTheme } from '../../types/controlTheme';
+import { generateProgressBarGradient } from '../../utils/colorUtils';
 
 interface SettingsPanelProps {
   theme: ControlTheme;
@@ -41,19 +42,38 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         return;
       }
 
-      const theme = THEMES[themeName];
+      if (themeName === 'custom') {
+        // For custom theme: save basic settings + restore persisted custom colors/background
+        const customPrimary = settings?.customPrimaryColor || '#2596be';
+        const customSecondary = settings?.customSecondaryColor || '#2596be';
+        const hasBackground = !!settings?.customBackgroundPath;
 
-      await updateSettings({
-        startingTotal: starting,
-        goalAmount: goal,
-        themeName,
-        themePrimaryColor: theme.primaryColor,
-        themeSecondaryColor: theme.secondaryColor,
-        themeBackgroundType: theme.backgroundType,
-        themeBackgroundValue: theme.backgroundValue,
-        themeProgressBarGradient: theme.progressBarGradient,
-        showLastBid,
-      });
+        await updateSettings({
+          startingTotal: starting,
+          goalAmount: goal,
+          themeName,
+          themePrimaryColor: customPrimary,
+          themeSecondaryColor: customSecondary,
+          themeBackgroundType: hasBackground ? 'image' : 'solid',
+          themeBackgroundValue: hasBackground ? settings!.customBackgroundPath! : '#1a1a2e',
+          themeProgressBarGradient: generateProgressBarGradient(customSecondary),
+          showLastBid,
+        });
+      } else {
+        const theme = THEMES[themeName];
+
+        await updateSettings({
+          startingTotal: starting,
+          goalAmount: goal,
+          themeName,
+          themePrimaryColor: theme.primaryColor,
+          themeSecondaryColor: theme.secondaryColor,
+          themeBackgroundType: theme.backgroundType,
+          themeBackgroundValue: theme.backgroundValue,
+          themeProgressBarGradient: theme.progressBarGradient,
+          showLastBid,
+        });
+      }
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);

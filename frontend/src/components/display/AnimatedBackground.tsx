@@ -1,8 +1,9 @@
 interface AnimatedBackgroundProps {
   themeName?: string;
+  customBackgroundUrl?: string | null;
 }
 
-export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: AnimatedBackgroundProps) {
+export default function AnimatedBackground({ themeName = 'boysGirlsClub', customBackgroundUrl }: AnimatedBackgroundProps) {
   // Floating particles
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
@@ -36,7 +37,51 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
   return (
     <>
       {/* Animated Gradient Background */}
-      {themeName === 'winter' ? (
+      {themeName === 'custom' ? (
+        customBackgroundUrl ? (
+          <>
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: -2,
+                backgroundImage: `url(${customBackgroundUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+            {/* Subtle dark overlay for text readability */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: -1,
+                background: 'rgba(0, 0, 0, 0.15)',
+                pointerEvents: 'none',
+              }}
+            />
+          </>
+        ) : (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: -2,
+              background: '#1a1a2e',
+            }}
+          />
+        )
+      ) : themeName === 'winter' ? (
         <>
           {/* Winter background image */}
           <div
@@ -136,7 +181,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
       )}
 
       {/* Overlay Pattern */}
-      {themeName === 'modern' ? (
+      {themeName === 'custom' ? null : themeName === 'modern' ? (
         <>
           {/* Left side - Orange vertical stripes (6 lines) */}
           <div
@@ -360,7 +405,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
       )}
 
       {/* Floating Particles */}
-      {themeName === 'winter' ? (
+      {themeName === 'custom' ? null : themeName === 'winter' ? (
         <div
           style={{
             position: 'fixed',
@@ -425,7 +470,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
             />
           ))}
         </div>
-      ) : themeName !== 'modern' && themeName !== 'winter' && (
+      ) : themeName !== 'modern' && themeName !== 'winter' && themeName !== 'custom' && (
         <div
           style={{
             position: 'fixed',
@@ -459,7 +504,7 @@ export default function AnimatedBackground({ themeName = 'boysGirlsClub' }: Anim
       )}
 
       {/* Glowing Orbs */}
-      {themeName !== 'modern' && themeName !== 'winter' && (
+      {themeName !== 'modern' && themeName !== 'winter' && themeName !== 'custom' && (
         <>
           <div
             style={{

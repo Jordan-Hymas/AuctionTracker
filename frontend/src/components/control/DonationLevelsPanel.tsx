@@ -139,12 +139,12 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
                   alignItems: 'center',
                   gap: '0.5rem',
                   padding: '0.5rem 0.75rem',
-                  backgroundColor: theme.colors.blueLighter,
+                  backgroundColor: theme.colors.blue,
                   border: `1px solid ${theme.colors.blue}`,
                   borderRadius: '9999px',
                   fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: theme.colors.blueDark,
+                  fontWeight: '600',
+                  color: '#ffffff',
                   transition: 'all 0.2s',
                 }}
               >

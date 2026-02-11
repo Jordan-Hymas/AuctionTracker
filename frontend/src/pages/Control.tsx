@@ -7,6 +7,7 @@ import ExportButton from '../components/control/ExportButton';
 import ResetButton from '../components/control/ResetButton';
 import CurrentLevelSelector from '../components/control/CurrentLevelSelector';
 import DonationLevelsPanel from '../components/control/DonationLevelsPanel';
+import CustomThemePanel from '../components/control/CustomThemePanel';
 import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
 import { adminApi } from '../services/api';
@@ -15,11 +16,13 @@ import { getTheme } from '../config/controlThemes';
 import { useResponsive } from '../hooks/useResponsive';
 
 export default function Control() {
-  const { currentTotal, goalAmount, startingTotal, isConnected, isLoading } = useAuction();
+  const { currentTotal, goalAmount, startingTotal, isConnected, isLoading, settings } = useAuction();
   const [serverInfo, setServerInfo] = useState<{ ipAddresses: string[]; port: number } | null>(null);
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
+  const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
+  const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
   const theme = getTheme(themeMode);
-  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { isMobile, isTablet } = useResponsive();
 
   useEffect(() => {
     const fetchServerInfo = async () => {
@@ -72,12 +75,6 @@ export default function Control() {
     if (isMobile) return '1fr';
     if (isTablet) return 'repeat(2, 1fr)';
     return 'repeat(3, 1fr)';
-  };
-
-  const getMainGridCols = () => {
-    if (isMobile) return '1fr';
-    if (isTablet) return '1fr 1fr';
-    return 'minmax(0, 1.7fr) minmax(0, 1.2fr)';
   };
 
   return (
@@ -179,7 +176,7 @@ export default function Control() {
               <div
                 style={{
                   fontSize: '0.75rem',
-                  color: theme.colors.textSecondary,
+                  color: theme.colors.textPrimary,
                   marginBottom: '0.3rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -293,35 +290,117 @@ export default function Control() {
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Tab Bar */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: getMainGridCols(),
-            gap: '1rem',
+            display: 'flex',
+            gap: '0.5rem',
             marginBottom: '1rem',
-            alignItems: 'flex-start',
+            backgroundColor: theme.colors.cardBg,
+            padding: '0.375rem',
+            borderRadius: '10px',
+            boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+            transition: 'background-color 0.2s, box-shadow 0.2s',
           }}
         >
-          {/* Left Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <BidForm theme={theme} />
-            <BidHistory theme={theme} />
-          </div>
+          <button
+            onClick={() => setActiveTab('setup')}
+            onMouseEnter={() => setHoveredTab('setup')}
+            onMouseLeave={() => setHoveredTab(null)}
+            style={{
+              flex: 1,
+              padding: isMobile ? '0.75rem 0.5rem' : '0.875rem 1rem',
+              fontSize: isMobile ? '0.9375rem' : '1.0625rem',
+              fontWeight: '700',
+              color: activeTab === 'setup' ? '#ffffff' : theme.colors.textSecondary,
+              backgroundColor: activeTab === 'setup'
+                ? theme.colors.blue
+                : hoveredTab === 'setup'
+                  ? theme.colors.hover
+                  : 'transparent',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'setup' ? `0 2px 6px ${theme.colors.shadowMd}` : 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Setup
+          </button>
+          <button
+            onClick={() => setActiveTab('live')}
+            onMouseEnter={() => setHoveredTab('live')}
+            onMouseLeave={() => setHoveredTab(null)}
+            style={{
+              flex: 1,
+              padding: isMobile ? '0.75rem 0.5rem' : '0.875rem 1rem',
+              fontSize: isMobile ? '0.9375rem' : '1.0625rem',
+              fontWeight: '700',
+              color: activeTab === 'live' ? '#ffffff' : theme.colors.textSecondary,
+              backgroundColor: activeTab === 'live'
+                ? theme.colors.blue
+                : hoveredTab === 'live'
+                  ? theme.colors.hover
+                  : 'transparent',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'live' ? `0 2px 6px ${theme.colors.shadowMd}` : 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Live Event
+          </button>
+        </div>
 
-          {/* Right Column */}
-          <div style={{ display: 'grid', gridTemplateRows: 'minmax(0, auto) minmax(0, auto) minmax(0, auto)', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.05fr) minmax(0, 0.95fr)', gap: '1rem' }}>
-              <CurrentLevelSelector theme={theme} />
-              <DonationLevelsPanel theme={theme} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.15fr) minmax(0, 0.85fr)', gap: '1rem' }}>
+        {/* Tab Content */}
+        {activeTab === 'setup' ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+              gap: '1rem',
+              marginBottom: '1rem',
+              alignItems: 'flex-start',
+            }}
+          >
+            {/* Left Column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <SettingsPanel theme={theme} />
+              {settings?.themeName === 'custom' && <CustomThemePanel theme={theme} />}
+            </div>
+            {/* Right Column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <DonationLevelsPanel theme={theme} />
               <LogoUploader theme={theme} />
             </div>
-            <GoalReachedPanel theme={theme} />
           </div>
-        </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.5fr) minmax(0, 1fr)',
+              gap: '1rem',
+              marginBottom: '1rem',
+              alignItems: 'flex-start',
+            }}
+          >
+            {/* Left Column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <BidForm theme={theme} />
+              <BidHistory theme={theme} />
+            </div>
+
+            {/* Right Column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <CurrentLevelSelector theme={theme} />
+              <GoalReachedPanel theme={theme} />
+              <ExportButton theme={theme} />
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div
@@ -338,7 +417,6 @@ export default function Control() {
             transition: 'background-color 0.2s, box-shadow 0.2s',
           }}
         >
-          <ExportButton theme={theme} />
           <ResetButton theme={theme} />
           <a
             href="/mobile"
