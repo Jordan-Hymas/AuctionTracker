@@ -147,7 +147,8 @@ export default function Display() {
             justifyContent: 'center',
             width: '100%',
             marginTop: 'clamp(8rem, 18vh, 16rem)',
-            transform: 'translateX(-62px)',
+            transform: `translateX(${lastBid?.paddleNumber && lastBid.paddleNumber.length >= 4 ? '-172px' : '-62px'})`,
+            transition: 'transform 0.5s ease',
           }}
         >
           {/* Main Content Grid */}

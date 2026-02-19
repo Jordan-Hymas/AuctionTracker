@@ -7,6 +7,7 @@
 [X] Paddle Numbers need to be at least 4 ints instead of 3
 [X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
 [] Change Vertical thermometer should look "like rectangle rounded edges" add option to choose
+[] Use ChatGPT to create the new thermometer
 [] Paddle number display should have an animation like a presentation 3s delay for animation 
 [X] Mobile version should allow the user to select the donation amount
 [] Resolution to fit any display 1920-1080p
