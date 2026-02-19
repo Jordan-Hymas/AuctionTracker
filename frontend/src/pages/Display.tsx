@@ -1,5 +1,6 @@
 import { useAuction } from '../context/AuctionContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Bid } from '../types/bid';
 import TotalDisplay from '../components/display/TotalDisplay';
 import GoalDisplay from '../components/display/GoalDisplay';
 import LogoDisplay from '../components/display/LogoDisplay';
@@ -13,9 +14,38 @@ export default function Display() {
   const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, lastUpdateTime, isConnected } = useAuction();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Calculate progress
+  // ── Displayed total: advances only when a paddle is shown from the queue ──
+  // This keeps the total and progress bar in sync with the paddle animation
+  // instead of jumping ahead the moment a bid arrives from the server.
+  const [displayedTotal, setDisplayedTotal] = useState(0);
+  const hasInitialized = useRef(false);
+  const prevTotalRef   = useRef(0);
+
+  // One-time initialization once the context finishes loading
+  useEffect(() => {
+    if (isLoading || hasInitialized.current) return;
+    setDisplayedTotal(currentTotal);
+    prevTotalRef.current = currentTotal;
+    hasInitialized.current = true;
+  }, [isLoading, currentTotal]);
+
+  // Undo / reset: if the true total ever drops, sync down immediately
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+    if (currentTotal < prevTotalRef.current) {
+      setDisplayedTotal(prev => Math.min(prev, currentTotal));
+    }
+    prevTotalRef.current = currentTotal;
+  }, [currentTotal]);
+
+  // Called by PaddleNumberDisplay the instant a queued paddle starts entering
+  const handleBidDisplayed = useCallback((bid: Bid) => {
+    setDisplayedTotal(prev => prev + bid.amount);
+  }, []);
+
+  // Calculate progress from the displayed total (not the live server total)
   const progress = goalAmount && goalAmount > 0
-    ? Math.min(((currentTotal - startingTotal) / (goalAmount - startingTotal)) * 100, 100)
+    ? Math.min(((displayedTotal - startingTotal) / (goalAmount - startingTotal)) * 100, 100)
     : 0;
 
   const toggleFullscreen = async () => {
@@ -147,8 +177,7 @@ export default function Display() {
             justifyContent: 'center',
             width: '100%',
             marginTop: 'clamp(8rem, 18vh, 16rem)',
-            transform: `translateX(${lastBid?.paddleNumber && lastBid.paddleNumber.length >= 4 ? '-172px' : '-62px'})`,
-            transition: 'transform 0.5s ease',
+            transform: 'translateX(-62px)',
           }}
         >
           {/* Main Content Grid */}
@@ -162,13 +191,21 @@ export default function Display() {
               gap: 'clamp(2rem, 4vw, 6rem)',
             }}
           >
-            {/* LEFT: Paddle Number Display */}
+            {/* LEFT: Paddle Number Display — fixed layout width prevents the
+                thermometer and totals from moving when digit count changes.
+                The translateX shifts the paddle panel left so the large number
+                never bleeds into the totals column; clamp() keeps it
+                proportional across all display sizes without touching the
+                flex layout (other elements don't move). */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginLeft: 'clamp(8rem, 15vw, 25rem)',
+                width: 'clamp(22rem, 32vw, 52rem)',
+                flexShrink: 0,
+                transform: 'translateX(clamp(-90px, -5.5vw, -28px))',
               }}
             >
               <PaddleNumberDisplay
@@ -177,6 +214,7 @@ export default function Display() {
                 themeName={themeName}
                 primaryColor={primaryColor}
                 secondaryColor={secondaryColor}
+                onBidDisplayed={handleBidDisplayed}
               />
             </div>
 
@@ -239,7 +277,7 @@ export default function Display() {
                   }}
                 />
                 <TotalDisplay
-                  total={currentTotal}
+                  total={displayedTotal}
                   color={secondaryColor}
                   labelColor={themeName === 'custom' ? (settings?.customBackgroundPath ? '#ffffff' : primaryColor) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
                   themeName={themeName}

@@ -325,3 +325,28 @@
     transform: scale(1.2);
   }
 }
+
+/* Paddle Cube Swivel — EXIT
+   Pure rotateY + early opacity fade. Fading to 0 before reaching 90°
+   avoids the distorted "stuck at edge" look that caused the stutter. */
+@keyframes paddleCubeExit {
+  0%   { transform: rotateY(0deg);   opacity: 1; }
+  45%  { transform: rotateY(-42deg); opacity: 0.85; }
+  100% { transform: rotateY(-80deg); opacity: 0; }
+}
+
+/* Paddle Cube Swivel — ENTER
+   Mirrors exit exactly so the two halves feel like one continuous rotation. */
+@keyframes paddleCubeEnter {
+  0%   { transform: rotateY(80deg);  opacity: 0; }
+  55%  { transform: rotateY(42deg);  opacity: 0.85; }
+  100% { transform: rotateY(0deg);   opacity: 1; }
+}
+
+/* Shimmer sweep — diagonal light band that crosses the card on entry */
+@keyframes paddleShimmerSweep {
+  0%   { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateX(230%)  skewX(-18deg); opacity: 0; }
+}

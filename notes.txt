@@ -2,34 +2,35 @@
 
 # DUE Feb 26th
 
+[] Paddle shifting animation 3s 
+[] Change control panel to default to dark theme unless changed
+[] Check mobile view, should allow you to enter bids without keyboard closing or have an enter button on the keyboard # only.
+[] Change Vertical thermometer should look "like rectangle rounded edges" add option to choose
+[] When goal reached on main screen it should have confettie with the thermometer moving. 
+[] On the control panel setup section add a section to change the paddle animation (spin, slide, ex..)
+	(New animation where the edges come togeather then open up showing wa new paddle number)
+
+[] On the control panel setup section add a way to change the progress bar (Thermometer, pill, ex...)
+	(will need to ajust the position for everything with different progress bar themes)
+
+[] Fix the time stamps on the control panel recent bids section and also make sure the csv download shows it correctly.
+
+
 [] Works on Windows machine 
 [] Package the project and deploy on different pc's
-[X] Paddle Numbers need to be at least 4 ints instead of 3
-[X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
-[] Change Vertical thermometer should look "like rectangle rounded edges" add option to choose
 [] Use ChatGPT to create the new thermometer
 [] Paddle number display should have an animation like a presentation 3s delay for animation 
-[X] Mobile version should allow the user to select the donation amount
 [] Resolution to fit any display 1920-1080p
-[] When goal reached on main screen it should have confettie with the thermometer moving. 
 [] Clean the directory make sure everything looks great, package, deploy, and testing.
 [] Start screen before paddle numbers are entered needs to be fixed 
 [] 4 digits distorts the display section so its not centered fix this!!!
 [] Make sure everything stays centered on any display size
 
+[X] Paddle Numbers need to be at least 4 ints instead of 3
+[X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
 
 
-# Todo 
 
-	Themes:
-	- Thanksgiving - Leaves falling background, turkey, ex..
-	- Christmas - Snow fall background frosted UI.
-	- 4th of July - Fireworks background.
-	- NPCE - NPCE colors and moving theme with our colors as the background.
-	- Custom - Add custom background add an image or moving image to background. 
 
 	
 
-# Auction thermometer
-
-I need you to help create me a web portal application that when ran it can be accessed across any device on the network somthing like localhost:3000. The application should be a thermometer that tracks bids for auction events each bid entered should be displayed on the screen and added to the thermometer that slowly grows with each bid/ donation. the software should allow you to enter the starting bid numbers. the application should have a main display that shows the thermometer display as well as control panel seperate from the main screen it needs to be able to take any logo via download to be displayed on the main screen it should alos be able to change the theme of the main display. we want to focus on a clean screen with animations for the donations. the auction paddle number should be entered into the control side and add that bid amount to the thermometer. make sure everything looks and works clean it should be optimized to work quickly and easily when used for these auction events. really focus on the control panel section and the main thermometer display. the program should be very easy to transfer from one device to another using somthing like a docker container or something similar should be able to download it with a docker type command. when logos are added to the project it should check the logo size and ajust it so that it is displayed correctly on the main UI. The program should add the new bids sum and increase the thermometer effect. 
