@@ -92,6 +92,7 @@ export function getSettings(): Settings {
   }
   const settings = snakeToCamel(row);
   settings.showLastBid = Boolean(settings.showLastBid);
+  settings.goalReachedEnabled = Boolean(settings.goalReachedEnabled);
 
   // Parse donation_levels JSON
   try {
@@ -172,6 +173,34 @@ export function updateSettings(updates: UpdateSettings): Settings {
     fields.push('current_donation_level = ?');
     values.push(updates.currentDonationLevel);
   }
+  if (updates.goalReachedEnabled !== undefined) {
+    fields.push('goal_reached_enabled = ?');
+    values.push(updates.goalReachedEnabled ? 1 : 0);
+  }
+  if (updates.goalReachedManualTotal !== undefined) {
+    fields.push('goal_reached_manual_total = ?');
+    values.push(updates.goalReachedManualTotal);
+  }
+  if (updates.goalReachedMessage !== undefined) {
+    fields.push('goal_reached_message = ?');
+    values.push(updates.goalReachedMessage);
+  }
+  if (updates.customBackgroundPath !== undefined) {
+    fields.push('custom_background_path = ?');
+    values.push(updates.customBackgroundPath);
+  }
+  if (updates.customPrimaryColor !== undefined) {
+    fields.push('custom_primary_color = ?');
+    values.push(updates.customPrimaryColor);
+  }
+  if (updates.customSecondaryColor !== undefined) {
+    fields.push('custom_secondary_color = ?');
+    values.push(updates.customSecondaryColor);
+  }
+  if (updates.customColorPreset !== undefined) {
+    fields.push('custom_color_preset = ?');
+    values.push(updates.customColorPreset);
+  }
 
   if (fields.length === 0) {
     return getSettings();
@@ -230,6 +259,10 @@ export function resetAllData(): void {
       logo_path = NULL,
       donation_levels = '[]',
       current_donation_level = NULL,
+      custom_background_path = NULL,
+      custom_primary_color = '#2596be',
+      custom_secondary_color = '#2596be',
+      custom_color_preset = NULL,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run();

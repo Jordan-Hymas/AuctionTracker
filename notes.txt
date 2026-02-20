@@ -1,16 +1,40 @@
 # Auction Tracker Program
 
-# Todo 
+# DUE Feb 26th
 
-	Themes:
-	- Thanksgiving - Leaves falling background, turkey, ex..
-	- Christmas - Snow fall background frosted UI.
-	- 4th of July - Fireworks background.
-	- NPCE - NPCE colors and moving theme with our colors as the background.
-	- Custom - Add custom background add an image or moving image to background. 
+[] Paddle shifting animation 3s 
+[] Change control panel to default to dark theme unless changed
+[] Check mobile view, should allow you to enter bids without keyboard closing or have an enter button on the keyboard # only.
+[] Change Vertical thermometer should look "like rectangle rounded edges" add option to choose
+[] When goal reached on main screen it should have confettie with the thermometer moving. 
+[] On the control panel setup section add a section to change the paddle animation (spin, slide, ex..)
+	(New animation where the edges come togeather then open up showing wa new paddle number)
+
+[] On the control panel setup section add a way to change the progress bar (Thermometer, pill, ex...)
+	(will need to ajust the position for everything with different progress bar themes)
+
+[] Fix the time stamps on the control panel recent bids section and also make sure the csv download shows it correctly.
+
+[] Use Electronjs.org to make an exucatable for windows. 
+
+
+[] Works on Windows machine 
+[] Package the project and deploy on different pc's
+[] Use ChatGPT to create the new thermometer
+[] Paddle number display should have an animation like a presentation 3s delay for animation 
+[] Resolution to fit any display 1920-1080p
+[] Clean the directory make sure everything looks great, package, deploy, and testing.
+[] Start screen before paddle numbers are entered needs to be fixed 
+[] 4 digits distorts the display section so its not centered fix this!!!
+[] Make sure everything stays centered on any display size
+
+[X] Paddle Numbers need to be at least 4 ints instead of 3
+[X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
+
+
+
+Great work. Now push the changes for this current branch "paddleAnimation" to main then create a new branch called "controlPanel" and help me do the following. Now I need you to do the following to the control panel. For starters, make the control panel display in dark mode by default. They should still be able to change it to light mode if they wish. Also, on the control panel page, in the settings section, when you're setting up the main part, under goal amount, add number of paddle digits. So, for example, some paddle numbers will be three digits, some will be four. Have an option there to enter the number of paddle digits. That way, on the live event, if the paddle digits was set to three, I couldn't type more than three digits on the paddle number section. If the paddle numbers were set to four on the setup screen, then on the live event paddle number entering screen, I can set up to four digits. This will prevent people from adding extra numbers and causing a bunch of headaches. Also, on the setup screen, add a new widget to customize paddle animation. I'm going to make two different paddle animations. There should be a drop-down to choose between the two paddle animations. This first one we created will be the spinning paddle animation. In that same setup page, add another widget below the paddle section that allows the user to change the progress bar theme. So the current theme right now would be considered thermostat, and I'll add other themes later.
+
 
 	
 
-# Auction thermometer
-
-I need you to help create me a web portal application that when ran it can be accessed across any device on the network somthing like localhost:3000. The application should be a thermometer that tracks bids for auction events each bid entered should be displayed on the screen and added to the thermometer that slowly grows with each bid/ donation. the software should allow you to enter the starting bid numbers. the application should have a main display that shows the thermometer display as well as control panel seperate from the main screen it needs to be able to take any logo via download to be displayed on the main screen it should alos be able to change the theme of the main display. we want to focus on a clean screen with animations for the donations. the auction paddle number should be entered into the control side and add that bid amount to the thermometer. make sure everything looks and works clean it should be optimized to work quickly and easily when used for these auction events. really focus on the control panel section and the main thermometer display. the program should be very easy to transfer from one device to another using somthing like a docker container or something similar should be able to download it with a docker type command. when logos are added to the project it should check the logo size and ajust it so that it is displayed correctly on the main UI. The program should add the new bids sum and increase the thermometer effect. 

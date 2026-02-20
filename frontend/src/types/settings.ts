@@ -12,6 +12,13 @@ export interface Settings {
   showLastBid: boolean;
   donationLevels: number[];
   currentDonationLevel: number | null;
+  goalReachedEnabled: boolean;
+  goalReachedManualTotal: number | null;
+  goalReachedMessage: string | null;
+  customBackgroundPath: string | null;
+  customPrimaryColor: string;
+  customSecondaryColor: string;
+  customColorPreset: string | null;
   updatedAt: string;
 }
 
@@ -28,4 +35,11 @@ export interface UpdateSettings {
   showLastBid?: boolean;
   donationLevels?: number[];
   currentDonationLevel?: number | null;
+  goalReachedEnabled?: boolean;
+  goalReachedManualTotal?: number | null;
+  goalReachedMessage?: string | null;
+  customBackgroundPath?: string | null;
+  customPrimaryColor?: string;
+  customSecondaryColor?: string;
+  customColorPreset?: string | null;
 }

@@ -63,7 +63,11 @@ export default function LastBidAnimation({ bid, show }: LastBidAnimationProps) {
           fontSize: 'clamp(2.5rem, 6vw, 5rem)',
           fontWeight: '900',
           color: '#fbbf24',
-          textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+          textShadow: `
+            0 0 30px rgba(251, 191, 36, 0.25),
+            0 0 60px rgba(251, 191, 36, 0.15),
+            0 4px 12px rgba(0, 0, 0, 0.5)
+          `,
         }}
       >
         +{formatCurrency(currentBid.amount)}

@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuction } from '../../context/AuctionContext';
+import { ControlTheme } from '../../types/controlTheme';
 
-export default function BidForm() {
+interface BidFormProps {
+  theme: ControlTheme;
+}
+
+export default function BidForm({ theme }: BidFormProps) {
   const { addBid, settings } = useAuction();
   const [paddleNumber, setPaddleNumber] = useState('');
   const [useCustomAmount, setUseCustomAmount] = useState(false);
@@ -9,7 +14,7 @@ export default function BidForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
 
@@ -35,13 +40,19 @@ export default function BidForm() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError('');
     setSuccess(false);
 
     if (!paddleNumber.trim()) {
       setError('Paddle number is required');
+      return;
+    }
+
+    // Validate paddle number is 1-4 digits only
+    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
+      setError('Paddle number must be 1-4 digits (0-9999)');
       return;
     }
 
@@ -91,23 +102,27 @@ export default function BidForm() {
   return (
     <div
       style={{
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.cardBg,
         borderRadius: '8px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        padding: '1rem',
+        boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >
-      <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Add Bid</h2>
+      <h2 style={{ marginBottom: '0.75rem', fontSize: '1.125rem', fontWeight: '600', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
+        Add Bid
+      </h2>
 
       {error && (
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
+            backgroundColor: theme.colors.redLight,
+            color: theme.colors.redDark,
             borderRadius: '4px',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
             fontSize: '0.875rem',
+            transition: 'background-color 0.2s, color 0.2s',
           }}
         >
           {error}
@@ -118,47 +133,51 @@ export default function BidForm() {
         <div
           style={{
             padding: '0.75rem',
-            backgroundColor: '#d1fae5',
-            color: '#065f46',
+            backgroundColor: theme.colors.greenLight,
+            color: theme.colors.greenDark,
             borderRadius: '4px',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
             fontSize: '0.875rem',
+            transition: 'background-color 0.2s, color 0.2s',
           }}
         >
           Bid added successfully!
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <div role="presentation">
         {/* Current Selected Level Display */}
         {!useCustomAmount && (
           <div
             style={{
-              marginBottom: '1.5rem',
-              padding: '1rem',
-              backgroundColor: currentLevel ? '#d1fae5' : '#f3f4f6',
-              border: `2px solid ${currentLevel ? '#10b981' : '#d1d5db'}`,
-              borderRadius: '8px',
+              marginBottom: '1rem',
+              padding: '0.75rem',
+              backgroundColor: currentLevel ? theme.colors.greenLight : theme.colors.cardBorder,
+              border: `2px solid ${currentLevel ? theme.colors.green : theme.colors.inputBorder}`,
+              borderRadius: '6px',
+              transition: 'all 0.2s',
             }}
           >
             <div
               style={{
                 fontSize: '0.75rem',
                 fontWeight: '600',
-                color: currentLevel ? '#065f46' : '#6b7280',
+                color: currentLevel ? theme.colors.greenDark : theme.colors.textSecondary,
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 marginBottom: '0.25rem',
+                transition: 'color 0.2s',
               }}
             >
               Selected Level
             </div>
             <div
               style={{
-                fontSize: '2rem',
+                fontSize: '1.75rem',
                 fontWeight: '900',
-                color: currentLevel ? '#047857' : '#9ca3af',
+                color: currentLevel ? theme.colors.greenDark : theme.colors.textMuted,
                 lineHeight: '1',
+                transition: 'color 0.2s',
               }}
             >
               {currentLevel ? formatCurrency(currentLevel) : 'No level selected'}
@@ -167,7 +186,7 @@ export default function BidForm() {
         )}
 
         {/* Custom Amount Checkbox */}
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
           <label
             style={{
               display: 'flex',
@@ -176,6 +195,8 @@ export default function BidForm() {
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '500',
+              color: theme.colors.textPrimary,
+              transition: 'color 0.2s',
             }}
           >
             <input
@@ -194,8 +215,8 @@ export default function BidForm() {
 
         {/* Custom Amount Input */}
         {useCustomAmount && (
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
               Custom Amount ($) *
             </label>
             <input
@@ -208,55 +229,95 @@ export default function BidForm() {
               disabled={isSubmitting}
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
+                padding: '0.625rem',
+                border: `1px solid ${theme.colors.inputBorder}`,
                 borderRadius: '4px',
                 fontSize: '1rem',
+                backgroundColor: theme.colors.inputBg,
+                color: theme.colors.textPrimary,
+                transition: 'all 0.2s',
               }}
             />
           </div>
         )}
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
             Paddle Number *
           </label>
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
+            inputMode="numeric"
+            maxLength={4}
             value={paddleNumber}
-            onChange={(e) => setPaddleNumber(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+              setPaddleNumber(value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
             placeholder="e.g., 134"
             disabled={isSubmitting}
+            autoComplete="off"
+            autoFocus
             style={{
               width: '100%',
-              padding: '0.75rem',
-              border: '1px solid #d1d5db',
+              padding: '0.625rem',
+              border: `1px solid ${theme.colors.inputBorder}`,
               borderRadius: '4px',
               fontSize: '1rem',
+              backgroundColor: theme.colors.inputBg,
+              color: theme.colors.textPrimary,
+              transition: 'all 0.2s',
+              resize: 'none',
+              overflow: 'hidden',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
             }}
-            autoFocus
           />
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleSubmit}
           disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
           style={{
             width: '100%',
-            padding: '0.875rem',
+            padding: '0.75rem',
             border: 'none',
-            borderRadius: '4px',
-            backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) ? '#9ca3af' : '#2563eb',
-            color: 'white',
+            borderRadius: '6px',
+            backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) ? theme.colors.cardBorder : theme.colors.blue,
+            color: isSubmitting || (!useCustomAmount && !currentLevel) ? theme.colors.textMuted : 'white',
             cursor: isSubmitting || (!useCustomAmount && !currentLevel) ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
+            fontSize: '0.9375rem',
             fontWeight: '600',
+            boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
+            transition: 'all 0.2s ease',
+            letterSpacing: '0.025em',
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubmitting && (useCustomAmount || currentLevel)) {
+              e.currentTarget.style.backgroundColor = theme.colors.blueDark;
+              e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isSubmitting && (useCustomAmount || currentLevel)) {
+              e.currentTarget.style.backgroundColor = theme.colors.blue;
+              e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
+              e.currentTarget.style.transform = 'translateY(0)';
+            }
           }}
         >
           {isSubmitting ? 'Submitting...' : 'Submit Bid'}
         </button>
-      </form>
+      </div>
     </div>
   );
 }

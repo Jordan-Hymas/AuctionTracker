@@ -5,9 +5,10 @@ interface TotalDisplayProps {
   label?: string;
   color?: string;
   labelColor?: string;
+  themeName?: string;
 }
 
-export default function TotalDisplay({ total, label = 'Total Raised', color = '#2563eb', labelColor }: TotalDisplayProps) {
+export default function TotalDisplay({ total, label = 'Total Raised', color = '#2563eb', labelColor, themeName }: TotalDisplayProps) {
   const { value } = useAnimatedValue(total, 1500);
 
   const formatCurrency = (amount: number): string => {
@@ -20,10 +21,14 @@ export default function TotalDisplay({ total, label = 'Total Raised', color = '#
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+    <div style={{
+      textAlign: 'center',
+      marginBottom: '3rem',
+      minWidth: '12ch',
+    }}>
       <div
         style={{
-          fontSize: 'clamp(1.5rem, 4vw, 3rem)',
+          fontSize: 'clamp(1.5rem, 3vmin, 3rem)',
           fontWeight: '600',
           color: labelColor || '#6b7280',
           marginBottom: '1rem',
@@ -35,13 +40,17 @@ export default function TotalDisplay({ total, label = 'Total Raised', color = '#
       </div>
       <div
         style={{
-          fontSize: 'clamp(4rem, 15vw, 14rem)',
+          fontSize: 'clamp(4rem, 12vmin, 14rem)',
           fontWeight: '900',
           color: color,
           lineHeight: '1',
-          textShadow: '0 4px 20px rgba(37, 99, 235, 0.3)',
+          textShadow: themeName === 'boysGirlsClub'
+            ? '0 0 30px rgba(37, 150, 190, 0.25), 0 0 60px rgba(37, 150, 190, 0.15), 0 4px 20px rgba(0, 0, 0, 0.2)'
+            : '0 4px 20px rgba(37, 99, 235, 0.12)',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           letterSpacing: '-0.02em',
+          fontVariantNumeric: 'tabular-nums',
+          transform: 'translateZ(0)',
         }}
       >
         {formatCurrency(value)}

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { uploadMiddleware } from '../middleware/upload';
+import { uploadMiddleware, backgroundUploadMiddleware } from '../middleware/upload';
 import { SettingsService } from '../services/SettingsService';
-import { broadcastLogoUpdated } from '../websocket';
+import { broadcastLogoUpdated, broadcastSettingsUpdated } from '../websocket';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
@@ -86,6 +86,85 @@ router.delete('/logo', async (req: Request, res: Response) => {
     console.error('Logo deletion error:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to delete logo'
+    });
+  }
+});
+
+// POST /api/v1/upload/background - Upload and optimize background image
+router.post('/background', backgroundUploadMiddleware.single('background'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const uploadPath = req.file.path;
+    const filename = req.file.filename;
+    const ext = path.extname(filename);
+
+    // Skip optimization for SVG files
+    if (ext.toLowerCase() === '.svg') {
+      const backgroundUrl = `/uploads/${filename}`;
+      const settings = await SettingsService.updateSettings({ customBackgroundPath: backgroundUrl });
+      broadcastSettingsUpdated(settings);
+      return res.json({ backgroundUrl });
+    }
+
+    // Optimize image with Sharp - preserve up to 3840px width for 4K displays
+    const optimizedFilename = `optimized-${filename.replace(ext, '.webp')}`;
+    const optimizedPath = path.join(path.dirname(uploadPath), optimizedFilename);
+
+    await sharp(uploadPath)
+      .resize(3840, 2160, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 90 })
+      .toFile(optimizedPath);
+
+    // Delete original
+    fs.unlinkSync(uploadPath);
+
+    const backgroundUrl = `/uploads/${optimizedFilename}`;
+    const settings = await SettingsService.updateSettings({ customBackgroundPath: backgroundUrl });
+
+    broadcastSettingsUpdated(settings);
+
+    res.json({ backgroundUrl });
+  } catch (error) {
+    console.error('Background upload error:', error);
+
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to upload background'
+    });
+  }
+});
+
+// DELETE /api/v1/upload/background - Remove background image
+router.delete('/background', async (req: Request, res: Response) => {
+  try {
+    const currentSettings = await SettingsService.getSettings();
+
+    if (currentSettings.customBackgroundPath) {
+      const filename = path.basename(currentSettings.customBackgroundPath);
+      const filePath = path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../data/uploads'), filename);
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    const settings = await SettingsService.updateSettings({ customBackgroundPath: null });
+    broadcastSettingsUpdated(settings);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Background deletion error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to delete background'
     });
   }
 });

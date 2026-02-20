@@ -22,6 +22,8 @@ interface AuctionContextValue {
   updateSettings: (updates: UpdateSettings) => Promise<void>;
   uploadLogo: (file: File) => Promise<void>;
   removeLogo: () => Promise<void>;
+  uploadBackground: (file: File) => Promise<void>;
+  removeBackground: () => Promise<void>;
   exportCSV: () => Promise<void>;
   resetAuction: () => Promise<void>;
   refreshData: () => Promise<void>;
@@ -190,6 +192,30 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     }
   }, [settings]);
 
+  const uploadBackground = useCallback(async (file: File) => {
+    try {
+      const { backgroundUrl } = await uploadApi.uploadBackground(file);
+      if (settings) {
+        setSettings({ ...settings, customBackgroundPath: backgroundUrl });
+      }
+    } catch (error) {
+      console.error('Error uploading background:', error);
+      throw error;
+    }
+  }, [settings]);
+
+  const removeBackground = useCallback(async () => {
+    try {
+      await uploadApi.deleteBackground();
+      if (settings) {
+        setSettings({ ...settings, customBackgroundPath: null });
+      }
+    } catch (error) {
+      console.error('Error removing background:', error);
+      throw error;
+    }
+  }, [settings]);
+
   const exportCSV = useCallback(async () => {
     try {
       const blob = await exportApi.downloadCSV();
@@ -237,6 +263,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     updateSettings,
     uploadLogo,
     removeLogo,
+    uploadBackground,
+    removeBackground,
     exportCSV,
     resetAuction,
     refreshData,

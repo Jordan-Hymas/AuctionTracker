@@ -1,17 +1,52 @@
 import { useAuction } from '../context/AuctionContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Bid } from '../types/bid';
 import TotalDisplay from '../components/display/TotalDisplay';
 import GoalDisplay from '../components/display/GoalDisplay';
 import LogoDisplay from '../components/display/LogoDisplay';
 import PaddleNumberDisplay from '../components/display/PaddleNumberDisplay';
 import AnimatedBackground from '../components/display/AnimatedBackground';
 import UpdateFlash from '../components/display/UpdateFlash';
-import MoneyGrowthBar from '../components/display/MoneyGrowthBar';
-import CurrentLevelDisplay from '../components/display/CurrentLevelDisplay';
+import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
+import { generateThermometerGradient, hexToRgba, darkenColor } from '../utils/colorUtils';
 
 export default function Display() {
   const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, lastUpdateTime, isConnected } = useAuction();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ── Displayed total: advances only when a paddle is shown from the queue ──
+  // This keeps the total and progress bar in sync with the paddle animation
+  // instead of jumping ahead the moment a bid arrives from the server.
+  const [displayedTotal, setDisplayedTotal] = useState(0);
+  const hasInitialized = useRef(false);
+  const prevTotalRef   = useRef(0);
+
+  // One-time initialization once the context finishes loading
+  useEffect(() => {
+    if (isLoading || hasInitialized.current) return;
+    setDisplayedTotal(currentTotal);
+    prevTotalRef.current = currentTotal;
+    hasInitialized.current = true;
+  }, [isLoading, currentTotal]);
+
+  // Undo / reset: if the true total ever drops, sync down immediately
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+    if (currentTotal < prevTotalRef.current) {
+      setDisplayedTotal(prev => Math.min(prev, currentTotal));
+    }
+    prevTotalRef.current = currentTotal;
+  }, [currentTotal]);
+
+  // Called by PaddleNumberDisplay the instant a queued paddle starts entering
+  const handleBidDisplayed = useCallback((bid: Bid) => {
+    setDisplayedTotal(prev => prev + bid.amount);
+  }, []);
+
+  // Calculate progress from the displayed total (not the live server total)
+  const progress = goalAmount && goalAmount > 0
+    ? Math.min(((displayedTotal - startingTotal) / (goalAmount - startingTotal)) * 100, 100)
+    : 0;
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -48,152 +83,381 @@ export default function Display() {
     );
   }
 
-  const themeName = settings?.themeName || 'classic';
+  const themeName = settings?.themeName || 'boysGirlsClub';
   const primaryColor = settings?.themePrimaryColor || '#2563eb';
   const secondaryColor = settings?.themeSecondaryColor || '#3b82f6';
+
+  // Helper function for thermometer progress bar gradient
+  const getThermometerGradient = () => {
+    switch (themeName) {
+      case 'boysGirlsClub':
+      case 'winter':
+        return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
+      case 'modern':
+      case 'NPCE':
+        return 'linear-gradient(to top, #c23a1d, #e24725, #f5633d)';
+      case 'modernDots':
+        return 'linear-gradient(to top, #0891b2, #06b6d4, #22d3ee)';
+      case 'custom':
+        return generateThermometerGradient(secondaryColor);
+      default:
+        return 'linear-gradient(to top, #1a7ca8, #2596be, #3ab0d8)';
+    }
+  };
 
   return (
     <div
       style={{
         position: 'relative',
+        display: 'grid',
+        gridTemplateRows: 'auto 1fr auto',
+        gridTemplateColumns: '1fr',
         minHeight: '100vh',
         width: '100vw',
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        cursor: 'default',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
       }}
     >
       {/* Animated Background */}
-      <AnimatedBackground themeName={themeName} />
+      <AnimatedBackground themeName={themeName} customBackgroundUrl={settings?.customBackgroundPath} />
 
-      {/* Main Container */}
-      <div
+      {/* Conditional Rendering: Goal Reached Display or Normal Display */}
+      {settings?.goalReachedEnabled ? (
+        <GoalReachedDisplay
+          displayTotal={settings.goalReachedManualTotal || currentTotal}
+          message={settings.goalReachedMessage}
+          themeName={themeName}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          logoPath={settings.logoPath}
+        />
+      ) : (
+        <>
+          {/* Main Container */}
+          <div
         style={{
           position: 'relative',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'clamp(1rem, 3vw, 4rem)',
+          display: 'grid',
+          gridTemplateRows: 'auto 1fr',
+          alignItems: 'center',
+          justifyItems: 'center',
+          padding: 'clamp(0.5rem, 2vh, 2rem) clamp(1rem, 2vw, 4rem)',
           zIndex: 1,
         }}
       >
-        {/* Top: Logo */}
+        {/* Top: Logo - Fixed at top center */}
         {settings?.logoPath && (
           <div
             style={{
-              marginBottom: 'clamp(1rem, 3vh, 4rem)',
+              position: 'fixed',
+              top: 'clamp(1rem, 2vh, 2rem)',
+              left: '50%',
+              transform: 'translateX(-50%)',
               animation: 'fadeIn 1s ease-out',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '100%',
+              zIndex: 50,
             }}
           >
             <LogoDisplay logoUrl={settings.logoPath} />
           </div>
         )}
 
-        {/* Main Content Grid */}
+        {/* Main Elements Container - Centered */}
         <div
+          className="main-elements"
           style={{
-            flex: 1,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 500px), 1fr))',
-            gap: 'clamp(2rem, 5vw, 6rem)',
+            display: 'flex',
             alignItems: 'center',
-            maxWidth: '2000px',
+            justifyContent: 'center',
             width: '100%',
-            margin: '0 auto',
+            marginTop: 'clamp(8rem, 18vh, 16rem)',
+            transform: 'translateX(-62px)',
           }}
         >
-          {/* LEFT: Paddle Number Display */}
+          {/* Main Content Grid */}
           <div
+            className="content-grid"
             style={{
-              height: '100%',
               display: 'flex',
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              gap: 'clamp(2rem, 4vw, 6rem)',
             }}
           >
-            <PaddleNumberDisplay
-              lastBid={lastBid}
-              currentDonationLevel={settings?.currentDonationLevel || null}
-              themeName={themeName}
-            />
-          </div>
-
-          {/* CENTER: Total & Goal */}
-          <div
-            style={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(2rem, 3vw, 4rem)',
-            }}
-          >
-            {/* Total Display with Glow */}
+            {/* LEFT: Paddle Number Display — fixed layout width prevents the
+                thermometer and totals from moving when digit count changes.
+                The translateX shifts the paddle panel left so the large number
+                never bleeds into the totals column; clamp() keeps it
+                proportional across all display sizes without touching the
+                flex layout (other elements don't move). */}
             <div
               style={{
-                position: 'relative',
-                animation: 'fadeIn 1s ease-out 0.2s backwards',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 'clamp(8rem, 15vw, 25rem)',
+                width: 'clamp(22rem, 32vw, 52rem)',
+                flexShrink: 0,
+                transform: 'translateX(clamp(-90px, -5.5vw, -28px))',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '150%',
-                  height: '150%',
-                  background: `radial-gradient(circle, ${
-                    themeName === 'boysGirlsClub'
-                      ? 'rgba(0, 133, 202, 0.4)'
-                      : 'rgba(59, 130, 246, 0.3)'
-                  }, transparent)`,
-                  filter: 'blur(60px)',
-                  animation: 'pulse 4s ease-in-out infinite',
-                  zIndex: -1,
-                }}
-              />
-              <TotalDisplay
-                total={currentTotal}
-                color={secondaryColor}
-                labelColor={themeName === 'boysGirlsClub' ? '#000000' : undefined}
+              <PaddleNumberDisplay
+                lastBid={lastBid}
+                currentDonationLevel={settings?.currentDonationLevel || null}
+                themeName={themeName}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
+                onBidDisplayed={handleBidDisplayed}
               />
             </div>
 
-            {/* Goal Display */}
-            {goalAmount && (
-              <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
-                <GoalDisplay
-                  goalAmount={goalAmount}
-                  color={themeName === 'boysGirlsClub' ? '#FFFFFF' : '#fbbf24'}
-                  labelColor={themeName === 'boysGirlsClub' ? '#000000' : undefined}
-                />
-              </div>
-            )}
-
-            {/* Animated Progress Bar (if goal set) */}
-            {goalAmount && (
+            {/* CENTER: Thermometer with Total & Goal overlaid on left */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 'clamp(-2rem, -2vw, -4rem)',
+                animation: 'fadeIn 1s ease-out 0.6s backwards',
+              }}
+            >
+            {/* Total & Goal positioned on left side of thermometer */}
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translateX(-100%) translateY(-50%)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 'clamp(1.5rem, 2vw, 3rem)',
+                zIndex: 2,
+                minWidth: 'clamp(400px, 40vw, 800px)',
+              }}
+            >
+              {/* Total Display with Glow */}
               <div
                 style={{
-                  width: '100%',
-                  maxWidth: 'min(800px, 90vw)',
-                  animation: 'fadeIn 1s ease-out 0.6s backwards',
+                  position: 'relative',
+                  animation: 'fadeIn 1s ease-out 0.2s backwards',
+                  transform: 'translateZ(0)',
+                  willChange: 'contents',
                 }}
               >
-                <MoneyGrowthBar
-                  currentTotal={currentTotal}
-                  goalAmount={goalAmount}
-                  startingTotal={startingTotal}
-                  primaryColor={primaryColor}
-                  progressBarGradient={settings?.themeProgressBarGradient}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%) translateZ(0)',
+                    width: '150%',
+                    height: '150%',
+                    background: `radial-gradient(circle, ${
+                      themeName === 'custom'
+                        ? hexToRgba(secondaryColor, 0.3)
+                        : themeName === 'boysGirlsClub'
+                        ? 'rgba(0, 133, 202, 0.4)'
+                        : 'rgba(59, 130, 246, 0.3)'
+                    }, transparent)`,
+                    filter: 'blur(60px)',
+                    animation: 'pulse 4s ease-in-out infinite',
+                    zIndex: -1,
+                    willChange: 'opacity',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <TotalDisplay
+                  total={displayedTotal}
+                  color={secondaryColor}
+                  labelColor={themeName === 'custom' ? (settings?.customBackgroundPath ? '#ffffff' : primaryColor) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                  themeName={themeName}
                 />
               </div>
-            )}
+
+              {/* Goal Display */}
+              {goalAmount && (
+                <div style={{ animation: 'fadeIn 1s ease-out 0.4s backwards' }}>
+                  <GoalDisplay
+                    goalAmount={goalAmount}
+                    color={themeName === 'custom' ? secondaryColor : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#2596be' : themeName === 'modern' ? '#e24725' : '#fbbf24'}
+                    labelColor={themeName === 'custom' ? (settings?.customBackgroundPath ? '#ffffff' : primaryColor) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#000000' : themeName === 'modern' ? '#1b3664' : undefined}
+                    themeName={themeName}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Thermometer Container with Progress Bar - DO NOT MODIFY PROGRESS BAR POSITIONING */}
+            {/* Progress bar and thermometer are locked together - moving the container moves both */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                marginLeft: 'clamp(6rem, 12vw, 18rem)',
+                transform: 'translateZ(0)',
+              }}
+            >
+              {/* FINALIZED: Progress Bar - width: 10%, bottom: 9%, height: 80%, borderRadius: 50px 50px 150px 150px */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '10%',
+                  bottom: '9%',
+                  height: '80%',
+                  zIndex: 0,
+                  overflow: 'hidden',
+                  borderRadius: '50px 50px 150px 150px',
+                  isolation: 'isolate',
+                }}
+              >
+                {/* Liquid fill */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    width: '100%',
+                    height: `${progress}%`,
+                    background: getThermometerGradient(),
+                    transition: 'height 1.5s ease-out',
+                    boxShadow: `
+                      inset 2px 0 4px rgba(255, 255, 255, 0.3),
+                      inset -2px 0 4px rgba(0, 0, 0, 0.2),
+                      inset 0 3px 6px rgba(255, 255, 255, 0.2),
+                      inset 0 -3px 8px rgba(0, 0, 0, 0.15)
+                    `,
+                    willChange: 'height',
+                    borderRadius: '50px 50px 150px 150px',
+                  }}
+                />
+                {/* Liquid depth overlay */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    width: '100%',
+                    height: `${progress}%`,
+                    background: `linear-gradient(90deg,
+                      rgba(0, 0, 0, 0.15) 0%,
+                      rgba(255, 255, 255, 0.1) 20%,
+                      rgba(255, 255, 255, 0.2) 35%,
+                      rgba(255, 255, 255, 0.05) 50%,
+                      rgba(0, 0, 0, 0.12) 100%
+                    )`,
+                    borderRadius: '50px 50px 150px 150px',
+                    pointerEvents: 'none',
+                    transition: 'height 1.5s ease-out',
+                  }}
+                />
+                {/* Shine highlight */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '15%',
+                    width: '25%',
+                    height: `${progress}%`,
+                    background: 'linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0.1), transparent)',
+                    borderRadius: '50px 50px 150px 150px',
+                    pointerEvents: 'none',
+                    transition: 'height 1.5s ease-out',
+                  }}
+                />
+                {/* Subtle wave animation at top */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: `calc(${progress}% - 8px)`,
+                    left: 0,
+                    width: '100%',
+                    height: '16px',
+                    background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                    animation: 'liquidWave 2s ease-in-out infinite',
+                    transition: 'bottom 1.5s ease-out',
+                    pointerEvents: 'none',
+                  }}
+                />
+                {/* Animated bubbles */}
+                {[
+                  { left: '25%', size: 4, duration: 8, delay: 0 },
+                  { left: '45%', size: 3, duration: 10, delay: 2 },
+                  { left: '65%', size: 5, duration: 9, delay: 4 },
+                  { left: '35%', size: 3, duration: 11, delay: 1 },
+                  { left: '55%', size: 4, duration: 7, delay: 3 },
+                  { left: '30%', size: 2, duration: 12, delay: 5 },
+                  { left: '70%', size: 3, duration: 9, delay: 6 },
+                  { left: '40%', size: 2, duration: 10, delay: 7 },
+                  { left: '60%', size: 4, duration: 8, delay: 2.5 },
+                  { left: '50%', size: 3, duration: 11, delay: 4.5 },
+                ].map((bubble, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      bottom: '0%',
+                      left: bubble.left,
+                      width: `${bubble.size}px`,
+                      height: `${bubble.size}px`,
+                      background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.3))',
+                      borderRadius: '50%',
+                      animation: `bubbleFloat ${bubble.duration}s linear infinite`,
+                      animationDelay: `${bubble.delay}s`,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                ))}
+                
+              </div>
+
+              {/* Thermometer Image */}
+              <img
+                src="/Background/thermometerFinal.png"
+                alt="Fundraising Thermometer"
+                className="thermometer-image"
+                style={{
+                  position: 'relative',
+                  height: 'clamp(400px, 70vh, 900px)',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                  zIndex: 1,
+                  transform: 'translateZ(0)',
+                }}
+              />
+
+              {/* Percentage display - overlayed on top of thermometer */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '7.5%',
+                  left: '50%',
+                  transform: 'translateX(calc(-50% + 2px))',
+                  fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+                  fontWeight: '900',
+                  color: themeName === 'custom' ? darkenColor(secondaryColor, 0.25) : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#1a7ca8' : themeName === 'modern' ? '#c23a1d' : '#0891b2',
+                  textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 -1px 2px rgba(255,255,255,0.8)',
+                  zIndex: 10,
+                  whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {Math.round(progress)}%
+              </div>
+            </div>
+            </div>
           </div>
         </div>
       </div>
@@ -221,21 +485,25 @@ export default function Display() {
           onClick={toggleFullscreen}
           style={{
             position: 'fixed',
-            bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
-            left: 'clamp(0.5rem, 2vw, 1.5rem)',
+            bottom: 'clamp(1rem, 2vh, 2rem)',
+            left: 'clamp(1rem, 2vw, 2rem)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
             backgroundColor:
-              themeName === 'boysGirlsClub'
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.2)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)',
             backdropFilter: 'blur(10px)',
-            border: `2px solid ${themeName === 'boysGirlsClub' ? '#0085CA' : '#3b82f6'}`,
+            border: `2px solid ${themeName === 'custom' ? primaryColor : (themeName === 'boysGirlsClub' || themeName === 'winter') ? '#0085CA' : '#3b82f6'}`,
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: 'clamp(1rem, 3vw, 1.5rem)',
             color: '#ffffff',
             boxShadow:
-              themeName === 'boysGirlsClub'
+              themeName === 'custom'
+                ? `0 4px 12px ${hexToRgba(primaryColor, 0.5)}`
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? '0 4px 12px rgba(0, 133, 202, 0.5)'
                 : '0 4px 12px rgba(59, 130, 246, 0.5)',
             zIndex: 100,
@@ -243,14 +511,18 @@ export default function Display() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              themeName === 'boysGirlsClub'
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.4)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.4)'
                 : 'rgba(59, 130, 246, 0.4)';
             e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor =
-              themeName === 'boysGirlsClub'
+              themeName === 'custom'
+                ? hexToRgba(primaryColor, 0.2)
+                : (themeName === 'boysGirlsClub' || themeName === 'winter')
                 ? 'rgba(0, 133, 202, 0.2)'
                 : 'rgba(59, 130, 246, 0.2)';
             e.currentTarget.style.transform = 'scale(1)';
@@ -261,12 +533,42 @@ export default function Display() {
         </button>
       )}
 
-      {/* Connection Status Indicator */}
+      {/* Company Logo - Bottom Right */}
       <div
         style={{
           position: 'fixed',
-          bottom: 'clamp(0.5rem, 2vw, 1.5rem)',
-          right: 'clamp(0.5rem, 2vw, 1.5rem)',
+          bottom: 'clamp(1rem, 2vh, 2rem)',
+          right: 'clamp(1rem, 2vw, 2rem)',
+          zIndex: 99,
+          opacity: 0.2,
+          transition: 'opacity 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.4';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.2';
+        }}
+      >
+        <img
+          src="/branding/company-logo.png"
+          alt="Created by"
+          style={{
+            height: 'clamp(50px, 5vmin, 100px)',
+            width: 'auto',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))',
+          }}
+        />
+      </div>
+
+      {/* Connection Status Indicator */}
+      <div
+        className="connection-status"
+        style={{
+          position: 'fixed',
+          bottom: 'clamp(1rem, 2vh, 2rem)',
+          right: 'clamp(120px, calc(2vw + 100px), 200px)',
           display: 'flex',
           alignItems: 'center',
           gap: 'clamp(0.25rem, 1vw, 0.75rem)',
@@ -299,6 +601,217 @@ export default function Display() {
         />
         {isConnected ? 'LIVE' : 'DISCONNECTED'}
       </div>
+        </>
+      )}
+
+      {/* Responsive Media Queries */}
+      <style>
+        {`
+          /* Liquid wave animation */
+          @keyframes liquidWave {
+            0%, 100% {
+              transform: scaleX(0.9) scaleY(1);
+              opacity: 0.6;
+            }
+            50% {
+              transform: scaleX(1.1) scaleY(0.8);
+              opacity: 0.9;
+            }
+          }
+
+          /* Winter theme animations */
+          @keyframes snowfallWithWind {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0;
+            }
+            5% {
+              opacity: 1;
+            }
+            25% {
+              transform: translateY(27vh) translateX(15px);
+            }
+            50% {
+              transform: translateY(55vh) translateX(-10px);
+            }
+            75% {
+              transform: translateY(82vh) translateX(20px);
+            }
+            95% {
+              opacity: 0.7;
+            }
+            100% {
+              transform: translateY(110vh) translateX(5px);
+              opacity: 0;
+            }
+          }
+
+          @keyframes windStreaks {
+            0% {
+              transform: translateX(-100%);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+            }
+            90% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+          }
+
+          @keyframes iceShimmer {
+            0%, 100% {
+              opacity: 0.3;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.6;
+              transform: scale(1.05);
+            }
+          }
+
+          @keyframes frostSparkle {
+            0%, 100% {
+              opacity: 0.3;
+            }
+            25% {
+              opacity: 0.8;
+            }
+            50% {
+              opacity: 0.4;
+            }
+            75% {
+              opacity: 0.9;
+            }
+          }
+
+          @keyframes winterSwirl1 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.8;
+            }
+            50% {
+              transform: translate(30px, 20px) rotate(5deg);
+              opacity: 1;
+            }
+          }
+
+          @keyframes winterSwirl2 {
+            0%, 100% {
+              transform: translate(0, 0) rotate(0deg);
+              opacity: 0.7;
+            }
+            50% {
+              transform: translate(-20px, 30px) rotate(-5deg);
+              opacity: 0.9;
+            }
+          }
+
+          @keyframes shimmer {
+            0%, 100% {
+              opacity: 0.6;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
+
+          @keyframes sparkle {
+            0%, 100% {
+              opacity: 0.4;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.8;
+              transform: scale(1.1);
+            }
+          }
+
+          /* Bubble float animation - slow and gentle */
+          @keyframes bubbleFloat {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0;
+            }
+            5% {
+              opacity: 0.5;
+            }
+            25% {
+              transform: translateY(-150px) translateX(2px);
+              opacity: 0.6;
+            }
+            50% {
+              transform: translateY(-300px) translateX(-2px);
+              opacity: 0.5;
+            }
+            75% {
+              transform: translateY(-450px) translateX(1px);
+              opacity: 0.4;
+            }
+            95% {
+              opacity: 0.2;
+            }
+            100% {
+              transform: translateY(-600px) translateX(0);
+              opacity: 0;
+            }
+          }
+
+          /* Small Laptop - Prevent collisions */
+          @media (max-width: 1366px) {
+            .connection-status {
+              bottom: clamp(5rem, 10vh, 7rem) !important;
+              right: clamp(1rem, 2vw, 2rem) !important;
+            }
+          }
+
+          /* Standard Desktop */
+          @media (min-width: 1920px) and (max-width: 2560px) {
+            /* Grid gaps are handled by inline styles with clamp */
+          }
+
+          /* Large Display (4K) */
+          @media (min-width: 2560px) and (max-width: 4096px) {
+            /* Increase gap between grid items */
+            .content-grid {
+              column-gap: clamp(3rem, 5vw, 8rem);
+              row-gap: clamp(2.5rem, 4vh, 5rem);
+            }
+          }
+
+          /* Stadium Display (8K+) */
+          @media (min-width: 4096px) {
+            .content-grid {
+              column-gap: clamp(4rem, 6vw, 10rem);
+              row-gap: clamp(3rem, 5vh, 6rem);
+            }
+
+            .connection-status {
+              right: clamp(200px, calc(2vw + 150px), 300px) !important;
+            }
+          }
+
+          /* Ultra-wide displays (21:9, 32:9) */
+          @media (min-aspect-ratio: 21/9) {
+            .content-grid {
+              grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+              column-gap: clamp(3rem, 5vw, 8rem);
+            }
+          }
+
+          /* Portrait or tall displays */
+          @media (max-aspect-ratio: 4/3) {
+            .content-grid {
+              grid-template-columns: 1fr;
+              row-gap: clamp(2rem, 4vh, 4rem);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }
