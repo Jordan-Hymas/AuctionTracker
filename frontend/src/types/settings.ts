@@ -19,6 +19,9 @@ export interface Settings {
   customPrimaryColor: string;
   customSecondaryColor: string;
   customColorPreset: string | null;
+  paddleDigits: number;
+  paddleAnimation: string;
+  progressBarTheme: string;
   updatedAt: string;
 }
 
@@ -42,4 +45,7 @@ export interface UpdateSettings {
   customPrimaryColor?: string;
   customSecondaryColor?: string;
   customColorPreset?: string | null;
+  paddleDigits?: number;
+  paddleAnimation?: string;
+  progressBarTheme?: string;
 }

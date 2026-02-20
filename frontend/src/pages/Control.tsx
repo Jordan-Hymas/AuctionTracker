@@ -10,6 +10,8 @@ import DonationLevelsPanel from '../components/control/DonationLevelsPanel';
 import CustomThemePanel from '../components/control/CustomThemePanel';
 import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
+import PaddleAnimationPanel from '../components/control/PaddleAnimationPanel';
+import ProgressBarThemePanel from '../components/control/ProgressBarThemePanel';
 import { adminApi } from '../services/api';
 import { useState, useEffect } from 'react';
 import { getTheme } from '../config/controlThemes';
@@ -18,7 +20,7 @@ import { useResponsive } from '../hooks/useResponsive';
 export default function Control() {
   const { currentTotal, goalAmount, startingTotal, isConnected, isLoading, settings } = useAuction();
   const [serverInfo, setServerInfo] = useState<{ ipAddresses: string[]; port: number } | null>(null);
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
   const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
   const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
   const theme = getTheme(themeMode);
@@ -369,6 +371,8 @@ export default function Control() {
             {/* Left Column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <SettingsPanel theme={theme} />
+              <PaddleAnimationPanel theme={theme} />
+              <ProgressBarThemePanel theme={theme} />
               {settings?.themeName === 'custom' && <CustomThemePanel theme={theme} />}
             </div>
             {/* Right Column */}

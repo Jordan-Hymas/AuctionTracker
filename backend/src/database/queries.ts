@@ -201,6 +201,18 @@ export function updateSettings(updates: UpdateSettings): Settings {
     fields.push('custom_color_preset = ?');
     values.push(updates.customColorPreset);
   }
+  if (updates.paddleDigits !== undefined) {
+    fields.push('paddle_digits = ?');
+    values.push(updates.paddleDigits);
+  }
+  if (updates.paddleAnimation !== undefined) {
+    fields.push('paddle_animation = ?');
+    values.push(updates.paddleAnimation);
+  }
+  if (updates.progressBarTheme !== undefined) {
+    fields.push('progress_bar_theme = ?');
+    values.push(updates.progressBarTheme);
+  }
 
   if (fields.length === 0) {
     return getSettings();

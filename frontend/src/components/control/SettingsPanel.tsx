@@ -12,6 +12,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
   const { settings, updateSettings } = useAuction();
   const [startingTotal, setStartingTotal] = useState('0');
   const [goalAmount, setGoalAmount] = useState('');
+  const [paddleDigits, setPaddleDigits] = useState(3);
   const [themeName, setThemeName] = useState('boysGirlsClub');
   const [showLastBid, setShowLastBid] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -22,6 +23,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
     if (settings) {
       setStartingTotal(settings.startingTotal.toString());
       setGoalAmount(settings.goalAmount?.toString() || '');
+      setPaddleDigits(settings.paddleDigits ?? 3);
       setThemeName(settings.themeName);
       setShowLastBid(settings.showLastBid);
     }
@@ -51,6 +53,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         await updateSettings({
           startingTotal: starting,
           goalAmount: goal,
+          paddleDigits,
           themeName,
           themePrimaryColor: customPrimary,
           themeSecondaryColor: customSecondary,
@@ -65,6 +68,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         await updateSettings({
           startingTotal: starting,
           goalAmount: goal,
+          paddleDigits,
           themeName,
           themePrimaryColor: theme.primaryColor,
           themeSecondaryColor: theme.secondaryColor,
@@ -178,6 +182,36 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         />
         <p style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, marginTop: '0.25rem', transition: 'color 0.2s' }}>
           Fundraising goal (e.g., $10,000)
+        </p>
+      </div>
+
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
+          Number of Paddle Digits
+        </label>
+        <select
+          value={paddleDigits}
+          onChange={(e) => setPaddleDigits(parseInt(e.target.value))}
+          disabled={isSaving}
+          style={{
+            width: '100%',
+            padding: '0.625rem',
+            border: `1px solid ${theme.colors.inputBorder}`,
+            borderRadius: '4px',
+            fontSize: '0.875rem',
+            backgroundColor: theme.colors.inputBg,
+            color: theme.colors.textPrimary,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          <option value={1}>1 digit (0–9)</option>
+          <option value={2}>2 digits (0–99)</option>
+          <option value={3}>3 digits (0–999)</option>
+          <option value={4}>4 digits (0–9999)</option>
+        </select>
+        <p style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, marginTop: '0.25rem', transition: 'color 0.2s' }}>
+          Max digits allowed when entering a paddle number on the live event screen
         </p>
       </div>
 

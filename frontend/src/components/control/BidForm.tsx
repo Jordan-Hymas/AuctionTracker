@@ -17,6 +17,7 @@ export default function BidForm({ theme }: BidFormProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
+  const maxDigits = settings?.paddleDigits ?? 3;
 
   // Auto-focus on mount and after submission
   useEffect(() => {
@@ -50,9 +51,10 @@ export default function BidForm({ theme }: BidFormProps) {
       return;
     }
 
-    // Validate paddle number is 1-4 digits only
-    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
-      setError('Paddle number must be 1-4 digits (0-9999)');
+    // Validate paddle number against configured digit limit
+    const digitRegex = new RegExp(`^\\d{1,${maxDigits}}$`);
+    if (!digitRegex.test(paddleNumber.trim())) {
+      setError(`Paddle number must be 1–${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
       return;
     }
 
@@ -249,10 +251,10 @@ export default function BidForm({ theme }: BidFormProps) {
             ref={inputRef}
             rows={1}
             inputMode="numeric"
-            maxLength={4}
+            maxLength={maxDigits}
             value={paddleNumber}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+              const value = e.target.value.replace(/\D/g, '').slice(0, maxDigits);
               setPaddleNumber(value);
             }}
             onKeyDown={(e) => {

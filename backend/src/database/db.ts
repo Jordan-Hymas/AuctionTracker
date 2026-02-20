@@ -112,6 +112,21 @@ export function initializeDatabase() {
     db.exec(`ALTER TABLE settings ADD COLUMN custom_color_preset TEXT DEFAULT NULL`);
   }
 
+  if (!columnNames.includes('paddle_digits')) {
+    console.log('🔄 Adding paddle_digits column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN paddle_digits INTEGER DEFAULT 3`);
+  }
+
+  if (!columnNames.includes('paddle_animation')) {
+    console.log('🔄 Adding paddle_animation column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN paddle_animation TEXT DEFAULT 'spinning'`);
+  }
+
+  if (!columnNames.includes('progress_bar_theme')) {
+    console.log('🔄 Adding progress_bar_theme column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN progress_bar_theme TEXT DEFAULT 'thermostat'`);
+  }
+
   // Insert default settings if not exists
   const settingsCount = db.prepare('SELECT COUNT(*) as count FROM settings').get() as { count: number };
   if (settingsCount.count === 0) {
