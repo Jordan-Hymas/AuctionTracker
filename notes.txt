@@ -15,6 +15,8 @@
 
 [] Fix the time stamps on the control panel recent bids section and also make sure the csv download shows it correctly.
 
+[] Use Electronjs.org to make an exucatable for windows. 
+
 
 [] Works on Windows machine 
 [] Package the project and deploy on different pc's
@@ -30,6 +32,8 @@
 [X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
 
 
+
+Great work. Now push the changes for this current branch "paddleAnimation" to main then create a new branch called "controlPanel" and help me do the following. Now I need you to do the following to the control panel. For starters, make the control panel display in dark mode by default. They should still be able to change it to light mode if they wish. Also, on the control panel page, in the settings section, when you're setting up the main part, under goal amount, add number of paddle digits. So, for example, some paddle numbers will be three digits, some will be four. Have an option there to enter the number of paddle digits. That way, on the live event, if the paddle digits was set to three, I couldn't type more than three digits on the paddle number section. If the paddle numbers were set to four on the setup screen, then on the live event paddle number entering screen, I can set up to four digits. This will prevent people from adding extra numbers and causing a bunch of headaches. Also, on the setup screen, add a new widget to customize paddle animation. I'm going to make two different paddle animations. There should be a drop-down to choose between the two paddle animations. This first one we created will be the spinning paddle animation. In that same setup page, add another widget below the paddle section that allows the user to change the progress bar theme. So the current theme right now would be considered thermostat, and I'll add other themes later.
 
 
 	
