@@ -19,6 +19,7 @@ const WS_URL = getDefaultWsUrl();
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // Connect to WebSocket server
@@ -31,9 +32,17 @@ export function useWebSocket() {
       reconnectionDelayMax: 5000,
     });
 
+    const clearRetryTimer = () => {
+      if (retryTimerRef.current !== null) {
+        clearInterval(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+
     socket.on('connect', () => {
       console.log('✅ WebSocket connected - ID:', socket.id);
       console.log('✅ Transport:', socket.io.engine.transport.name);
+      clearRetryTimer();
       setIsConnected(true);
     });
 
@@ -44,7 +53,6 @@ export function useWebSocket() {
 
     socket.on('connect_error', (error) => {
       console.error('❌ WebSocket connection error:', error.message);
-      console.error('❌ Error details:', error);
     });
 
     socket.io.on('reconnect', (attempt) => {
@@ -60,7 +68,15 @@ export function useWebSocket() {
     });
 
     socket.io.on('reconnect_failed', () => {
-      console.error('❌ WebSocket reconnection failed');
+      console.warn('⚠️ WebSocket reconnection failed — starting 30s retry loop');
+      // Circuit breaker: keep trying every 30 seconds until the backend is back
+      if (retryTimerRef.current === null) {
+        retryTimerRef.current = setInterval(() => {
+          console.log('🔄 Circuit breaker: attempting reconnect...');
+          socket.io.opts.reconnectionAttempts = 5;
+          socket.connect();
+        }, 30000);
+      }
     });
 
     // Catch-all for debugging
@@ -71,6 +87,7 @@ export function useWebSocket() {
     socketRef.current = socket;
 
     return () => {
+      clearRetryTimer();
       socket.disconnect();
     };
   }, []);

@@ -36,6 +36,7 @@ yarn-error.log*
 # Build output
 dist/
 build/
+release/
 
 # Environment variables
 .env

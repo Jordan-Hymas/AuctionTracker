@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const isElectronBuild = process.env.ELECTRON_BUILD === 'true';
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: isElectronBuild ? './' : '/',
   plugins: [react()],
   server: {
     host: '0.0.0.0',

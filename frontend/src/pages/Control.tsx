@@ -23,6 +23,8 @@ export default function Control() {
   const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
   const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
   const [lowerRightRowHeight, setLowerRightRowHeight] = useState<number | null>(null);
+  const [showStaleWarning, setShowStaleWarning] = useState(false);
+  const staleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settingsPanelRef = useRef<HTMLDivElement>(null);
   const donationPanelRef = useRef<HTMLDivElement>(null);
   const theme = getTheme(themeMode);
@@ -81,6 +83,22 @@ export default function Control() {
     };
   }, [activeTab, isMobile, settings?.themeName]);
 
+  // Show stale-data warning if disconnected for more than 30 seconds
+  useEffect(() => {
+    if (!isConnected) {
+      staleTimerRef.current = setTimeout(() => setShowStaleWarning(true), 30000);
+    } else {
+      if (staleTimerRef.current !== null) {
+        clearTimeout(staleTimerRef.current);
+        staleTimerRef.current = null;
+      }
+      setShowStaleWarning(false);
+    }
+    return () => {
+      if (staleTimerRef.current !== null) clearTimeout(staleTimerRef.current);
+    };
+  }, [isConnected]);
+
   if (isLoading) {
     return (
       <div
@@ -109,6 +127,25 @@ export default function Control() {
   };
 
   return (
+    <>
+    {showStaleWarning && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        backgroundColor: '#b91c1c',
+        color: '#fff',
+        textAlign: 'center',
+        padding: '0.6rem 1rem',
+        fontSize: '0.9rem',
+        fontWeight: 600,
+        letterSpacing: '0.01em',
+      }}>
+        ⚠️ Connection lost — display may be showing stale data. Attempting to reconnect…
+      </div>
+    )}
     <div
       style={{
         minHeight: '100vh',
@@ -584,5 +621,6 @@ export default function Control() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { BidService } from '../services/BidService';
 import { getBidCount } from '../database/queries';
 import { broadcastBidAdded, broadcastBidUndone } from '../websocket';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post('/', async (req: Request, res: Response) => {
       totalBids: stats.totalBids,
     });
   } catch (error) {
-    console.error('Error adding bid:', error);
+    logger.error('Error adding bid', error);
     res.status(400).json({
       error: error instanceof Error ? error.message : 'Failed to add bid'
     });
@@ -49,7 +50,7 @@ router.delete('/last', async (req: Request, res: Response) => {
       totalBids,
     });
   } catch (error) {
-    console.error('Error undoing bid:', error);
+    logger.error('Error undoing bid', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to undo bid'
     });
@@ -62,7 +63,7 @@ router.get('/', async (req: Request, res: Response) => {
     const bids = await BidService.getAllBids();
     res.json({ bids });
   } catch (error) {
-    console.error('Error fetching bids:', error);
+    logger.error('Error fetching bids', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to fetch bids'
     });
@@ -73,16 +74,12 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/recent', async (req: Request, res: Response) => {
   try {
     const limit = parseInt(req.query.limit as string) || 10;
-    console.log('📋 Fetching recent bids with limit:', limit);
     const bids = await BidService.getRecentBids(limit);
-    console.log('✅ Recent bids fetched:', bids.length, 'bids');
     res.json({ bids });
   } catch (error) {
-    console.error('❌ Error fetching recent bids:', error);
-    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    logger.error('Error fetching recent bids', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to fetch recent bids',
-      details: error instanceof Error ? error.stack : undefined
     });
   }
 });
@@ -90,16 +87,12 @@ router.get('/recent', async (req: Request, res: Response) => {
 // GET /api/v1/bids/total - Get current total
 router.get('/total', async (req: Request, res: Response) => {
   try {
-    console.log('📊 Fetching bid stats...');
     const stats = await BidService.getBidStats();
-    console.log('✅ Bid stats fetched:', stats);
     res.json(stats);
   } catch (error) {
-    console.error('❌ Error fetching bid stats:', error);
-    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    logger.error('Error fetching bid stats', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to fetch bid stats',
-      details: error instanceof Error ? error.stack : undefined
     });
   }
 });

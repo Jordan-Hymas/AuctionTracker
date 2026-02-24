@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { getSettings, getRecentBids, getLastBid, getCurrentTotal } from './database/queries';
 import { Bid } from './models/Bid';
 import { Settings } from './models/Settings';
+import { logger } from './utils/logger';
 
 let io: Server | null = null;
 
@@ -16,7 +17,7 @@ export function initializeWebSocket(httpServer: HTTPServer): Server {
   });
 
   io.on('connection', (socket: Socket) => {
-    console.log(`✅ Client connected: ${socket.id}`);
+    logger.info('Client connected', { socketId: socket.id });
 
     // Send initial state to newly connected client
     try {
@@ -32,16 +33,16 @@ export function initializeWebSocket(httpServer: HTTPServer): Server {
         recentBids,
       });
     } catch (error) {
-      console.error('Error sending initial state:', error);
+      logger.error('Error sending initial state', error);
       socket.emit('error', { message: 'Failed to load initial state' });
     }
 
     socket.on('disconnect', () => {
-      console.log(`❌ Client disconnected: ${socket.id}`);
+      logger.info('Client disconnected', { socketId: socket.id });
     });
   });
 
-  console.log('✅ WebSocket server initialized');
+  logger.info('WebSocket server initialized');
   return io;
 }
 
@@ -55,48 +56,36 @@ export function getIO(): Server {
 // Broadcast helpers
 export function broadcastBidAdded(bid: Bid, newTotal: number, totalBids: number): void {
   if (io) {
-    console.log('📡 Broadcasting bid:added to all clients:', { bid, newTotal, totalBids });
-    console.log(`📡 Connected clients: ${io.engine.clientsCount}`);
-    io.emit('bid:added', {
-      bid,
-      newTotal,
-      totalBids,
-    });
+    logger.info('Broadcasting bid:added', { bid, newTotal, totalBids, clients: io.engine.clientsCount });
+    io.emit('bid:added', { bid, newTotal, totalBids });
   } else {
-    console.error('❌ Cannot broadcast bid:added - WebSocket not initialized');
+    logger.error('Cannot broadcast bid:added — WebSocket not initialized');
   }
 }
 
 export function broadcastBidUndone(removedBid: Bid, newTotal: number, totalBids: number): void {
   if (io) {
-    console.log('📡 Broadcasting bid:undone to all clients:', { removedBid, newTotal, totalBids });
-    console.log(`📡 Connected clients: ${io.engine.clientsCount}`);
-    io.emit('bid:undone', {
-      removedBid,
-      newTotal,
-      totalBids,
-    });
+    logger.info('Broadcasting bid:undone', { removedBid, newTotal, totalBids, clients: io.engine.clientsCount });
+    io.emit('bid:undone', { removedBid, newTotal, totalBids });
   } else {
-    console.error('❌ Cannot broadcast bid:undone - WebSocket not initialized');
+    logger.error('Cannot broadcast bid:undone — WebSocket not initialized');
   }
 }
 
 export function broadcastSettingsUpdated(settings: Settings): void {
   if (io) {
-    console.log('📡 Broadcasting settings:updated to all clients:', settings);
-    console.log(`📡 Connected clients: ${io.engine.clientsCount}`);
+    logger.info('Broadcasting settings:updated', { clients: io.engine.clientsCount });
     io.emit('settings:updated', { settings });
   } else {
-    console.error('❌ Cannot broadcast settings:updated - WebSocket not initialized');
+    logger.error('Cannot broadcast settings:updated — WebSocket not initialized');
   }
 }
 
 export function broadcastLogoUpdated(logoUrl: string | null): void {
   if (io) {
-    console.log('📡 Broadcasting logo:updated to all clients:', { logoUrl });
-    console.log(`📡 Connected clients: ${io.engine.clientsCount}`);
+    logger.info('Broadcasting logo:updated', { logoUrl, clients: io.engine.clientsCount });
     io.emit('logo:updated', { logoUrl });
   } else {
-    console.error('❌ Cannot broadcast logo:updated - WebSocket not initialized');
+    logger.error('Cannot broadcast logo:updated — WebSocket not initialized');
   }
 }

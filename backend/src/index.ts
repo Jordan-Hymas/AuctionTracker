@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import http from 'http';
 import path from 'path';
-import { initializeDatabase } from './database/db';
+import { initializeDatabase, startBackupSchedule, stopBackupSchedule } from './database/db';
 import { initializeWebSocket } from './websocket';
+import { logger } from './utils/logger';
 
 // Import routes
 import bidsRouter from './routes/bids';
@@ -18,6 +20,7 @@ const httpServer = http.createServer(app);
 
 // Initialize database
 initializeDatabase();
+startBackupSchedule();
 
 // Initialize WebSocket
 const io = initializeWebSocket(httpServer);
@@ -54,7 +57,7 @@ app.get('/', (req: Request, res: Response) => {
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
+  logger.error('Unhandled server error', { message: err.message, stack: err.stack });
   res.status(500).json({
     error: err.message || 'Internal server error',
   });
@@ -78,17 +81,19 @@ httpServer.listen(PORT, '0.0.0.0', () => {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\nShutting down gracefully...');
+  logger.info('Shutting down gracefully');
+  stopBackupSchedule();
   httpServer.close(() => {
-    console.log('Server closed');
+    logger.info('Server closed');
     process.exit(0);
   });
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nShutting down gracefully...');
+  logger.info('Shutting down gracefully');
+  stopBackupSchedule();
   httpServer.close(() => {
-    console.log('Server closed');
+    logger.info('Server closed');
     process.exit(0);
   });
 });

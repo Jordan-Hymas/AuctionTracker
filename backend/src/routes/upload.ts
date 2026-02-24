@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { uploadMiddleware, backgroundUploadMiddleware } from '../middleware/upload';
 import { SettingsService } from '../services/SettingsService';
 import { broadcastLogoUpdated, broadcastSettingsUpdated } from '../websocket';
+import { logger } from '../utils/logger';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
@@ -13,6 +14,16 @@ router.post('/logo', uploadMiddleware.single('logo'), async (req: Request, res: 
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Delete previous logo file before saving the new one
+    const existingSettings = await SettingsService.getSettings();
+    if (existingSettings.logoPath) {
+      const oldFilename = path.basename(existingSettings.logoPath);
+      const oldFilePath = path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../data/uploads'), oldFilename);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
     }
 
     const uploadPath = req.file.path;
@@ -50,7 +61,7 @@ router.post('/logo', uploadMiddleware.single('logo'), async (req: Request, res: 
 
     res.json({ logoUrl });
   } catch (error) {
-    console.error('Logo upload error:', error);
+    logger.error('Logo upload error', error);
 
     // Clean up uploaded file if it exists
     if (req.file && fs.existsSync(req.file.path)) {
@@ -83,7 +94,7 @@ router.delete('/logo', async (req: Request, res: Response) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Logo deletion error:', error);
+    logger.error('Logo deletion error', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to delete logo'
     });
@@ -95,6 +106,16 @@ router.post('/background', backgroundUploadMiddleware.single('background'), asyn
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Delete previous background file before saving the new one
+    const existingSettings = await SettingsService.getSettings();
+    if (existingSettings.customBackgroundPath) {
+      const oldFilename = path.basename(existingSettings.customBackgroundPath);
+      const oldFilePath = path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../data/uploads'), oldFilename);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
     }
 
     const uploadPath = req.file.path;
@@ -131,7 +152,7 @@ router.post('/background', backgroundUploadMiddleware.single('background'), asyn
 
     res.json({ backgroundUrl });
   } catch (error) {
-    console.error('Background upload error:', error);
+    logger.error('Background upload error', error);
 
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
@@ -162,7 +183,7 @@ router.delete('/background', async (req: Request, res: Response) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Background deletion error:', error);
+    logger.error('Background deletion error', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to delete background'
     });
@@ -219,7 +240,7 @@ router.post('/goal-reached-background', backgroundUploadMiddleware.single('backg
 
     res.json({ goalReachedBackgroundUrl });
   } catch (error) {
-    console.error('Goal reached background upload error:', error);
+    logger.error('Goal reached background upload error', error);
 
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
@@ -250,7 +271,7 @@ router.delete('/goal-reached-background', async (req: Request, res: Response) =>
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Goal reached background deletion error:', error);
+    logger.error('Goal reached background deletion error', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to delete goal reached background'
     });
