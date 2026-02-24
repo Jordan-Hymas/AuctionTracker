@@ -67,7 +67,11 @@
       "shortcutName": "AuctionTracker",
       "license": "build/license.txt",
       "installerHeader": "build/installerHeader.bmp",
-      "include": "build/installer.nsh"
+      "include": "build/installer.nsh",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp",
+      "runAfterFinish": true,
+      "installerSidebar": "build/installerSidebar.bmp",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "mac": {
       "icon": "build/icon.icns",

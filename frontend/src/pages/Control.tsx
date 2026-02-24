@@ -119,8 +119,13 @@ export default function Control() {
 
   const progress = goalAmount ? ((currentTotal - startingTotal) / (goalAmount - startingTotal)) * 100 : 0;
   const accessHost = networkInfo?.lanIp || 'localhost';
-  const controlAccessUrl = networkInfo ? `http://${accessHost}:${networkInfo.port}/control` : '';
-  const mobileAccessUrl = networkInfo ? `http://${accessHost}:${networkInfo.port}/mobile` : '';
+  const accessPort = networkInfo
+    ? (import.meta.env.DEV
+        ? (window.location.port || '5173')
+        : (window.location.port || String(networkInfo.port)))
+    : '';
+  const controlAccessUrl = networkInfo ? `http://${accessHost}:${accessPort}/control` : '';
+  const mobileAccessUrl = networkInfo ? `http://${accessHost}:${accessPort}/mobile` : '';
 
   // Responsive grid templates
   const getStatsGridCols = () => {
@@ -204,7 +209,7 @@ export default function Control() {
                     transition: 'background-color 0.2s, color 0.2s',
                   }}
                 >
-                  Server {networkInfo.lanIp || 'localhost'}:{networkInfo.port}
+                  Server {networkInfo.lanIp || 'localhost'}:{accessPort}
                 </div>
               )}
               <div

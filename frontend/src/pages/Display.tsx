@@ -6,12 +6,11 @@ import GoalDisplay from '../components/display/GoalDisplay';
 import LogoDisplay from '../components/display/LogoDisplay';
 import PaddleNumberDisplay from '../components/display/PaddleNumberDisplay';
 import AnimatedBackground from '../components/display/AnimatedBackground';
-import UpdateFlash from '../components/display/UpdateFlash';
 import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
 import { generateThermometerGradient, hexToRgba, darkenColor, lightenColor } from '../utils/colorUtils';
 
 export default function Display() {
-  const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, lastUpdateTime, isConnected } = useAuction();
+  const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading } = useAuction();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // ── Displayed total: advances only when a paddle is shown from the queue ──
@@ -677,9 +676,6 @@ export default function Display() {
         }}
       />
 
-      {/* Update Flash Notification */}
-      <UpdateFlash trigger={lastUpdateTime} message="Live Update!" />
-
       {/* Fullscreen Button - Only show when NOT in fullscreen */}
       {!isFullscreen && (
         <button
@@ -763,45 +759,6 @@ export default function Display() {
         />
       </div>
 
-      {/* Connection Status Indicator */}
-      <div
-        className="connection-status"
-        style={{
-          position: 'fixed',
-          bottom: 'clamp(1rem, 2vh, 2rem)',
-          right: 'clamp(120px, calc(2vw + 100px), 200px)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'clamp(0.25rem, 1vw, 0.75rem)',
-          padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1.5rem)',
-          backgroundColor: isConnected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-          backdropFilter: 'blur(10px)',
-          border: `2px solid ${isConnected ? '#10b981' : '#ef4444'}`,
-          borderRadius: '9999px',
-          fontSize: 'clamp(0.625rem, 1.5vw, 0.875rem)',
-          fontWeight: '700',
-          color: '#ffffff',
-          boxShadow: isConnected
-            ? '0 4px 12px rgba(16, 185, 129, 0.5)'
-            : '0 4px 12px rgba(239, 68, 68, 0.5)',
-          zIndex: 100,
-          animation: isConnected ? 'none' : 'pulse 1s ease-in-out infinite',
-        }}
-      >
-        <div
-          style={{
-            width: 'clamp(6px, 1.5vw, 10px)',
-            height: 'clamp(6px, 1.5vw, 10px)',
-            borderRadius: '50%',
-            backgroundColor: isConnected ? '#10b981' : '#ef4444',
-            animation: isConnected ? 'pulse 2s ease-in-out infinite' : 'none',
-            boxShadow: isConnected
-              ? '0 0 15px rgba(16, 185, 129, 1)'
-              : '0 0 15px rgba(239, 68, 68, 1)',
-          }}
-        />
-        {isConnected ? 'LIVE' : 'DISCONNECTED'}
-      </div>
         </>
       )}
 
@@ -968,14 +925,6 @@ export default function Display() {
             }
           }
 
-          /* Small Laptop - Prevent collisions */
-          @media (max-width: 1366px) {
-            .connection-status {
-              bottom: clamp(5rem, 10vh, 7rem) !important;
-              right: clamp(1rem, 2vw, 2rem) !important;
-            }
-          }
-
           /* Standard Desktop */
           @media (min-width: 1920px) and (max-width: 2560px) {
             /* Grid gaps are handled by inline styles with clamp */
@@ -995,10 +944,6 @@ export default function Display() {
             .content-grid {
               column-gap: clamp(4rem, 6vw, 10rem);
               row-gap: clamp(3rem, 5vh, 6rem);
-            }
-
-            .connection-status {
-              right: clamp(200px, calc(2vw + 150px), 300px) !important;
             }
           }
 
