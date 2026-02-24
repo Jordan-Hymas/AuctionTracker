@@ -18,6 +18,10 @@ let backendExitReason = null;
 let runtimeBaseUrl = null;
 let backendLogTail = [];
 
+function lockDownWindow(window) {
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+}
+
 function getRuntimeDataPaths() {
   const appDataDir = path.join(app.getPath('userData'), 'data');
   return {
@@ -275,7 +279,7 @@ async function createDisplayWindow(url) {
     minWidth: 1080,
     minHeight: 700,
     autoHideMenuBar: true,
-    title: 'AuctionTracker Display',
+    title: 'Auction Tracker (NPCE) - Display',
     icon: windowIconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -284,6 +288,7 @@ async function createDisplayWindow(url) {
     },
   });
 
+  lockDownWindow(displayWindow);
   displayWindow.removeMenu();
   await displayWindow.loadURL(url);
   displayWindow.maximize();
@@ -297,7 +302,7 @@ async function createControlWindow(url) {
     minWidth: 980,
     minHeight: 700,
     autoHideMenuBar: true,
-    title: 'AuctionTracker Control',
+    title: 'Auction Tracker (NPCE) - Control Panel',
     icon: windowIconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -306,6 +311,7 @@ async function createControlWindow(url) {
     },
   });
 
+  lockDownWindow(controlWindow);
   controlWindow.removeMenu();
   await controlWindow.loadURL(url);
 }
