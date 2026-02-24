@@ -1,9 +1,0 @@
-# How to start 
-
- First Terminal:
-	cd backend/ 
-	npm run dev 
-
- Second Terminal:
-	cd frontend/
-	npm run dev

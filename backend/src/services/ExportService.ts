@@ -5,7 +5,7 @@ export class ExportService {
     const bids = getAllBids();
 
     // CSV header
-    const header = 'Timestamp,Paddle Number,Bid Amount,Running Total\n';
+    const header = 'Entry #,Time (Local),Paddle Number,Bid Amount,Running Total\n';
 
     // CSV rows with running total
     let runningTotal = 0;
@@ -14,8 +14,8 @@ export class ExportService {
       .map(bid => {
         runningTotal += bid.amount;
         const date = new Date(bid.timestamp);
-        const timestamp = this.formatLocalDateTime(date);
-        return `${timestamp},${bid.paddleNumber},${bid.amount.toFixed(2)},${runningTotal.toFixed(2)}`;
+        const localTime = this.formatLocalDateTime(date);
+        return `${bid.id},${localTime},${bid.paddleNumber},${bid.amount.toFixed(2)},${runningTotal.toFixed(2)}`;
       })
       .join('\n');
 

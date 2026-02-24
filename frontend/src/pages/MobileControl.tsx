@@ -13,6 +13,7 @@ export default function MobileControl() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
+  const maxDigits = settings?.paddleDigits ?? 3;
 
   // Auto-focus and keep keyboard open
   useEffect(() => {
@@ -32,9 +33,10 @@ export default function MobileControl() {
       return;
     }
 
-    // Validate paddle number is 1-4 digits only
-    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
-      setError('Paddle must be 1-4 digits');
+    // Validate paddle number against configured digit limit (exact count required)
+    const digitRegex = new RegExp(`^\\d{${maxDigits}}$`);
+    if (!digitRegex.test(paddleNumber.trim())) {
+      setError(`Paddle must be exactly ${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
       return;
     }
 
@@ -143,41 +145,29 @@ export default function MobileControl() {
           overflowX: 'hidden',
         }}
       >
-        {/* Status Messages */}
-        {error && (
-          <div
-            style={{
-              padding: '1rem',
-              backgroundColor: '#fee2e2',
-              color: '#991b1b',
-              borderRadius: '12px',
-              marginBottom: '1rem',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-              textAlign: 'center',
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            style={{
-              padding: '0.75rem',
-              backgroundColor: '#ccfbf1',
-              color: '#115e59',
-              borderRadius: '8px',
-              marginBottom: '1rem',
-              fontSize: '0.875rem',
-              fontWeight: '700',
-              textAlign: 'center',
-              border: '2px solid #0f766e',
-            }}
-          >
-            ✓ Bid Added!
-          </div>
-        )}
+        {/* Status Messages — fixed height slot, opacity toggle avoids layout shift */}
+        <div
+          style={{
+            padding: '0.75rem',
+            backgroundColor: error ? '#fee2e2' : '#ccfbf1',
+            color: error ? '#991b1b' : '#115e59',
+            borderRadius: '10px',
+            marginBottom: '1rem',
+            fontSize: '0.9375rem',
+            fontWeight: '600',
+            textAlign: 'center',
+            border: success ? '2px solid #0f766e' : 'none',
+            opacity: error || success ? 1 : 0,
+            transition: 'opacity 0.15s',
+            pointerEvents: 'none',
+            minHeight: '2.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {error || (success ? '✓ Bid Added!' : '')}
+        </div>
 
         {/* Active Level Selector */}
         {!useCustomAmount && settings?.donationLevels && settings.donationLevels.length > 0 && (
@@ -215,7 +205,7 @@ export default function MobileControl() {
                   <button
                     key={level}
                     type="button"
-                    onClick={() => updateSettings({ currentDonationLevel: level })}
+                    onPointerDown={(e) => { e.preventDefault(); updateSettings({ currentDonationLevel: level }); }}
                     style={{
                       padding: '0.875rem 0.5rem',
                       backgroundColor: isActive ? '#0f766e' : '#f8fafc',
@@ -361,26 +351,29 @@ export default function MobileControl() {
               }}
             >
               Paddle Number
+              <span style={{ fontWeight: '600', color: '#64748b', textTransform: 'none', marginLeft: '0.35rem' }}>
+                ({maxDigits} digits)
+              </span>
             </label>
             <textarea
               ref={inputRef}
               rows={1}
               inputMode="numeric"
-              maxLength={4}
+              maxLength={maxDigits}
               value={paddleNumber}
               onChange={(e) => {
-                // Only allow digits, max 4
-                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                // Only allow digits up to configured paddle digit count.
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, maxDigits);
                 setPaddleNumber(value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="0000"
+              placeholder={'0'.repeat(maxDigits)}
               autoComplete="off"
               enterKeyHint="go"
               style={{
                 width: '100%',
                 padding: '1.25rem',
-                border: '3px solid #0f766e',
+                border: `3px solid ${paddleNumber.length > 0 && paddleNumber.length < maxDigits ? '#b91c1c' : '#0f766e'}`,
                 borderRadius: '16px',
                 fontSize: '2.5rem',
                 fontWeight: '700',
@@ -395,17 +388,20 @@ export default function MobileControl() {
                 fontFamily: 'inherit',
               }}
             />
+            {paddleNumber.length > 0 && paddleNumber.length < maxDigits && (
+              <div style={{ marginTop: '0.45rem', fontSize: '0.8rem', color: '#b91c1c', fontWeight: 600 }}>
+                {maxDigits - paddleNumber.length} more digit{maxDigits - paddleNumber.length === 1 ? '' : 's'} needed
+              </div>
+            )}
           </div>
 
           {/* Large Submit Button - Optimized for thumb tapping */}
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
-            onTouchStart={(e) => {
-              // Prevent focus loss on touch
-              e.preventDefault();
-              if (!isSubmitting && (useCustomAmount || currentLevel)) {
+            disabled={isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits}
+            onPointerDown={(e) => {
+              e.preventDefault(); // prevents focus loss → keyboard stays open
+              if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length === maxDigits) {
                 handleSubmit();
               }
             }}
@@ -414,12 +410,12 @@ export default function MobileControl() {
               padding: '2rem',
               border: 'none',
               borderRadius: '16px',
-              backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) ? '#cbd5e1' : '#0f766e',
+              backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? '#cbd5e1' : '#0f766e',
               color: '#ffffff',
               fontSize: '1.5rem',
               fontWeight: '800',
-              cursor: isSubmitting || (!useCustomAmount && !currentLevel) ? 'not-allowed' : 'pointer',
-              boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) ? 'none' : '0 8px 16px rgba(15, 118, 110, 0.4)',
+              cursor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? 'not-allowed' : 'pointer',
+              boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? 'none' : '0 8px 16px rgba(15, 118, 110, 0.4)',
               WebkitAppearance: 'none',
               appearance: 'none',
               textTransform: 'uppercase',
@@ -436,10 +432,7 @@ export default function MobileControl() {
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button
                 type="button"
-                onClick={() => {
-                  undoLastBid();
-                  setConfirmUndo(false);
-                }}
+                onPointerDown={(e) => { e.preventDefault(); undoLastBid(); setConfirmUndo(false); }}
                 style={{
                   flex: 1,
                   padding: '1rem',
@@ -460,7 +453,7 @@ export default function MobileControl() {
               </button>
               <button
                 type="button"
-                onClick={() => setConfirmUndo(false)}
+                onPointerDown={(e) => { e.preventDefault(); setConfirmUndo(false); }}
                 style={{
                   flex: 1,
                   padding: '1rem',
@@ -483,7 +476,7 @@ export default function MobileControl() {
           ) : (
             <button
               type="button"
-              onClick={() => setConfirmUndo(true)}
+              onPointerDown={(e) => { e.preventDefault(); setConfirmUndo(true); }}
               style={{
                 width: '100%',
                 padding: '1rem',

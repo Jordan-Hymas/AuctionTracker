@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuction } from '../../context/AuctionContext';
 import { ControlTheme } from '../../types/controlTheme';
 
@@ -6,14 +6,21 @@ interface GoalReachedPanelProps {
   theme: ControlTheme;
 }
 
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+
 export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
-  const { settings, updateSettings } = useAuction();
+  const { settings, updateSettings, uploadGoalReachedBackground, removeGoalReachedBackground } = useAuction();
   const [enabled, setEnabled] = useState(false);
   const [manualTotal, setManualTotal] = useState('');
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false);
+  const [isRemovingBackground, setIsRemovingBackground] = useState(false);
+  const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (settings) {
@@ -22,6 +29,66 @@ export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
       setMessage(settings.goalReachedMessage || '');
     }
   }, [settings]);
+
+  const handleBackgroundSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError('');
+    setSuccess(false);
+
+    if (file.size > MAX_FILE_SIZE) {
+      setError('Background file too large. Maximum size is 15MB.');
+      return;
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setError('Invalid file type. Please upload JPEG, PNG, SVG, or WebP.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setBackgroundPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setIsUploadingBackground(true);
+    try {
+      await uploadGoalReachedBackground(file);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload goal reached background');
+      setBackgroundPreview(null);
+    } finally {
+      setIsUploadingBackground(false);
+      if (backgroundInputRef.current) {
+        backgroundInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveBackground = async () => {
+    if (!confirm('Remove goal reached background image?')) {
+      return;
+    }
+
+    setError('');
+    setSuccess(false);
+    setIsRemovingBackground(true);
+
+    try {
+      await removeGoalReachedBackground();
+      setBackgroundPreview(null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove goal reached background');
+    } finally {
+      setIsRemovingBackground(false);
+    }
+  };
 
   const handleSave = async () => {
     setError('');
@@ -204,9 +271,93 @@ export default function GoalReachedPanel({ theme }: GoalReachedPanelProps) {
         </p>
       </div>
 
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
+          Goal Reached Background Image
+        </label>
+
+        {(settings?.goalReachedBackgroundPath || backgroundPreview) && (
+          <div
+            style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem',
+              border: `1px solid ${theme.colors.cardBorder}`,
+              borderRadius: '6px',
+              backgroundColor: theme.mode === 'light' ? '#f9fafb' : theme.colors.inputBg,
+            }}
+          >
+            <img
+              src={backgroundPreview || settings?.goalReachedBackgroundPath || ''}
+              alt="Goal reached background preview"
+              style={{
+                width: '100%',
+                maxHeight: '140px',
+                objectFit: 'cover',
+                borderRadius: '4px',
+              }}
+            />
+          </div>
+        )}
+
+        <input
+          ref={backgroundInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/svg+xml,image/webp"
+          onChange={handleBackgroundSelect}
+          disabled={isUploadingBackground || isRemovingBackground || isSaving}
+          style={{ display: 'none' }}
+        />
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => backgroundInputRef.current?.click()}
+            disabled={isUploadingBackground || isRemovingBackground || isSaving}
+            style={{
+              flex: 1,
+              padding: '0.625rem',
+              border: `1px solid ${theme.colors.blue}`,
+              borderRadius: '6px',
+              backgroundColor: (isUploadingBackground || isRemovingBackground || isSaving) ? theme.colors.cardBorder : theme.colors.cardBg,
+              color: (isUploadingBackground || isRemovingBackground || isSaving) ? theme.colors.textMuted : theme.colors.blue,
+              cursor: (isUploadingBackground || isRemovingBackground || isSaving) ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+            }}
+          >
+            {isUploadingBackground ? 'Uploading...' : (settings?.goalReachedBackgroundPath ? 'Change Image' : 'Upload Image')}
+          </button>
+
+          {(settings?.goalReachedBackgroundPath || backgroundPreview) && (
+            <button
+              onClick={handleRemoveBackground}
+              disabled={isUploadingBackground || isRemovingBackground || isSaving}
+              style={{
+                padding: '0.625rem 0.875rem',
+                border: `1px solid ${theme.colors.red}`,
+                borderRadius: '6px',
+                backgroundColor: (isUploadingBackground || isRemovingBackground || isSaving) ? theme.colors.cardBorder : theme.colors.cardBg,
+                color: (isUploadingBackground || isRemovingBackground || isSaving) ? theme.colors.textMuted : theme.colors.red,
+                cursor: (isUploadingBackground || isRemovingBackground || isSaving) ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isRemovingBackground ? '...' : 'Remove'}
+            </button>
+          )}
+        </div>
+
+        <p style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, marginTop: '0.25rem', transition: 'color 0.2s' }}>
+          Optional: Display a custom background image only on the goal reached screen.
+        </p>
+      </div>
+
       <button
         onClick={handleSave}
-        disabled={isSaving}
+        disabled={isSaving || isUploadingBackground || isRemovingBackground}
         style={{
           width: '100%',
           padding: '0.875rem',

@@ -1,0 +1,23 @@
+AUCTIONTRACKER DESKTOP SOFTWARE LICENSE AGREEMENT
+Effective Date: February 24, 2026
+
+This software is licensed, not sold, by Network PC Engineering (NPCE) ("Licensor").
+By installing or using AuctionTracker Desktop, you ("Licensee") accept this Agreement.
+
+1. License Grant
+Licensor grants Licensee a limited, non-exclusive, non-transferable, revocable license to install and use AuctionTracker Desktop for authorized business and auction operations.
+
+2. Ownership and Restrictions
+All rights, title, and interest in the software remain with Licensor. Licensee may not resell, sublicense, reverse engineer, decompile, disassemble, or remove ownership notices, except where required by applicable law.
+
+3. Warranty Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+4. Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, LICENSOR IS NOT LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOSS OF DATA, REVENUE, OR PROFITS.
+
+5. Termination
+This license terminates automatically upon breach. Upon termination, Licensee must stop use and uninstall all copies.
+
+Sole Author: Jordan Hymas
+All rights in and to AuctionTracker Desktop, including all intellectual property rights, are exclusively reserved by Jordan Hymas and Network PC Engineering (NPCE). All rights reserved.

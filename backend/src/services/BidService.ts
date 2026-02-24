@@ -7,7 +7,7 @@ export class BidService {
       return { valid: false, error: 'Paddle number is required' };
     }
 
-    if (typeof bid.amount !== 'number' || bid.amount <= 0) {
+    if (typeof bid.amount !== 'number' || !Number.isFinite(bid.amount) || bid.amount <= 0) {
       return { valid: false, error: 'Bid amount must be a positive number' };
     }
 

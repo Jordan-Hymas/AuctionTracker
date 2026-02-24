@@ -20,7 +20,27 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
     }
   }, [settings]);
 
-  const handleAddLevel = () => {
+  const persistLevels = async (updatedLevels: number[], successText: string) => {
+    setIsSaving(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      await updateSettings({ donationLevels: updatedLevels });
+      setLevels(updatedLevels);
+      setSuccessMessage(successText);
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return true;
+    } catch (err) {
+      setErrorMessage('Failed to save donation levels');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddLevel = async () => {
     const amount = parseFloat(newLevel);
 
     if (isNaN(amount) || amount <= 0) {
@@ -36,35 +56,21 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
     }
 
     const updatedLevels = [...levels, amount].sort((a, b) => a - b);
-    setLevels(updatedLevels);
-    setNewLevel('');
     setErrorMessage('');
-  };
-
-  const handleRemoveLevel = (levelToRemove: number) => {
-    setLevels(levels.filter((l) => l !== levelToRemove));
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      await updateSettings({ donationLevels: levels });
-      setSuccessMessage('Donation levels saved successfully!');
-      setTimeout(() => setSuccessMessage(''), 2000);
-    } catch (err) {
-      setErrorMessage('Failed to save donation levels');
-      setTimeout(() => setErrorMessage(''), 3000);
-    } finally {
-      setIsSaving(false);
+    const saved = await persistLevels(updatedLevels, 'Donation level added and saved!');
+    if (saved) {
+      setNewLevel('');
     }
+  };
+
+  const handleRemoveLevel = async (levelToRemove: number) => {
+    const updatedLevels = levels.filter((l) => l !== levelToRemove);
+    await persistLevels(updatedLevels, 'Donation level removed and saved!');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleAddLevel();
+      void handleAddLevel();
     }
   };
 
@@ -151,11 +157,12 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
                 <span>{formatCurrency(level)}</span>
                 <button
                   onClick={() => handleRemoveLevel(level)}
+                  disabled={isSaving}
                   style={{
                     backgroundColor: 'transparent',
                     border: 'none',
                     color: theme.colors.red,
-                    cursor: 'pointer',
+                    cursor: isSaving ? 'not-allowed' : 'pointer',
                     fontSize: '1rem',
                     fontWeight: '700',
                     padding: '0',
@@ -214,35 +221,35 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
             }}
           />
           <button
-            onClick={handleAddLevel}
-            disabled={!newLevel}
+            onClick={() => void handleAddLevel()}
+            disabled={!newLevel || isSaving}
             style={{
               padding: '0.5rem 0.875rem',
-              backgroundColor: !newLevel ? theme.colors.cardBorder : theme.colors.blue,
+              backgroundColor: (!newLevel || isSaving) ? theme.colors.cardBorder : theme.colors.green,
               color: 'white',
               border: 'none',
               borderRadius: '6px',
               fontSize: '0.875rem',
               fontWeight: '600',
-              cursor: !newLevel ? 'not-allowed' : 'pointer',
+              cursor: (!newLevel || isSaving) ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
               whiteSpace: 'nowrap',
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              if (newLevel) {
-                e.currentTarget.style.backgroundColor = theme.colors.blueDark;
+              if (newLevel && !isSaving) {
+                e.currentTarget.style.backgroundColor = theme.colors.greenDark;
                 e.currentTarget.style.transform = 'scale(1.02)';
               }
             }}
             onMouseLeave={(e) => {
-              if (newLevel) {
-                e.currentTarget.style.backgroundColor = theme.colors.blue;
+              if (newLevel && !isSaving) {
+                e.currentTarget.style.backgroundColor = theme.colors.green;
                 e.currentTarget.style.transform = 'scale(1)';
               }
             }}
           >
-            Add
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
@@ -281,41 +288,6 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
         </div>
       )}
 
-      {/* Save Button */}
-      <button
-        onClick={handleSave}
-        disabled={isSaving}
-        style={{
-          width: '100%',
-          padding: '0.625rem',
-          backgroundColor: isSaving ? theme.colors.cardBorder : theme.colors.green,
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          fontSize: '0.875rem',
-          fontWeight: '600',
-          cursor: isSaving ? 'not-allowed' : 'pointer',
-          transition: 'all 0.2s',
-          letterSpacing: '0.025em',
-          boxShadow: isSaving ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
-        }}
-        onMouseEnter={(e) => {
-          if (!isSaving) {
-            e.currentTarget.style.backgroundColor = theme.colors.greenDark;
-            e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isSaving) {
-            e.currentTarget.style.backgroundColor = theme.colors.green;
-            e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
-            e.currentTarget.style.transform = 'translateY(0)';
-          }
-        }}
-      >
-        {isSaving ? 'Saving...' : 'Save Donation Levels'}
-      </button>
     </div>
   );
 }

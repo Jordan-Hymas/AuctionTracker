@@ -10,6 +10,7 @@ interface GoalReachedDisplayProps {
   primaryColor: string;
   secondaryColor: string;
   logoPath: string | null;
+  backgroundImagePath: string | null;
 }
 
 interface ConfettiPiece {
@@ -27,15 +28,16 @@ interface ConfettiPiece {
 
 // Theme color palette selector
 const getColorPalette = (theme: string, primaryColor?: string, secondaryColor?: string): string[] => {
+  const resolvedTheme = (theme === 'modern' || theme === 'modernDots') ? 'NPCE' : theme;
   if (theme === 'custom' && primaryColor && secondaryColor) {
     return [primaryColor, secondaryColor, lightenColor(primaryColor, 0.3), lightenColor(secondaryColor, 0.3), '#FFFFFF'];
   }
   const palettes: Record<string, string[]> = {
     boysGirlsClub: ['#2596be', '#30a5d0', '#40b5e0', '#1b5a7d', '#FFFFFF'],
-    modern: ['#e24725', '#ff5a3d', '#ff7355', '#1b3664', '#FFFFFF'],
-    modernDots: ['#0f172a', '#06b6d4', '#FFFFFF', '#e2e8f0'],
+    winter: ['#dff4ff', '#a4d7ee', '#5fb8de', '#1f79a4', '#FFFFFF'],
+    NPCE: ['#e24725', '#ff5a3d', '#ff7355', '#1b3664', '#FFFFFF'],
   };
-  return palettes[theme] || palettes.modern;
+  return palettes[resolvedTheme] || palettes.boysGirlsClub;
 };
 
 // Generate confetti with varied properties
@@ -67,7 +69,15 @@ const generateConfetti = (count: number, colors: string[]): ConfettiPiece[] => {
   }));
 };
 
-export default function GoalReachedDisplay({ displayTotal, message, themeName, primaryColor, secondaryColor, logoPath }: GoalReachedDisplayProps) {
+export default function GoalReachedDisplay({
+  displayTotal,
+  message,
+  themeName,
+  primaryColor,
+  secondaryColor,
+  logoPath,
+  backgroundImagePath,
+}: GoalReachedDisplayProps) {
   const { value } = useAnimatedValue(displayTotal, 1500);
 
   // Get theme color palette and generate confetti
@@ -103,6 +113,10 @@ export default function GoalReachedDisplay({ displayTotal, message, themeName, p
         gap: 'clamp(3rem, 6vw, 10rem)',
         padding: 'clamp(2rem, 4vw, 6rem)',
         paddingTop: logoPath ? 'clamp(10rem, 15vh, 20rem)' : 'clamp(2rem, 4vw, 6rem)',
+        backgroundImage: backgroundImagePath ? `url(${backgroundImagePath})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         zIndex: 10,
         animation: 'fadeIn 0.8s ease-out forwards',
       }}
@@ -228,6 +242,10 @@ export default function GoalReachedDisplay({ displayTotal, message, themeName, p
             textShadow: `${textShadow}, 0 0 40px ${secondaryColor}40, 0 0 80px ${secondaryColor}20`,
             letterSpacing: '-0.02em',
             fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontVariantNumeric: 'tabular-nums',
+            whiteSpace: 'nowrap',
+            textAlign: 'center',
+            minWidth: 'max-content',
           }}
         >
           {formatCurrency(value)}

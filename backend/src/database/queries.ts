@@ -185,6 +185,10 @@ export function updateSettings(updates: UpdateSettings): Settings {
     fields.push('goal_reached_message = ?');
     values.push(updates.goalReachedMessage);
   }
+  if (updates.goalReachedBackgroundPath !== undefined) {
+    fields.push('goal_reached_background_path = ?');
+    values.push(updates.goalReachedBackgroundPath);
+  }
   if (updates.customBackgroundPath !== undefined) {
     fields.push('custom_background_path = ?');
     values.push(updates.customBackgroundPath);
@@ -200,6 +204,18 @@ export function updateSettings(updates: UpdateSettings): Settings {
   if (updates.customColorPreset !== undefined) {
     fields.push('custom_color_preset = ?');
     values.push(updates.customColorPreset);
+  }
+  if (updates.paddleDigits !== undefined) {
+    fields.push('paddle_digits = ?');
+    values.push(updates.paddleDigits);
+  }
+  if (updates.paddleAnimation !== undefined) {
+    fields.push('paddle_animation = ?');
+    values.push(updates.paddleAnimation);
+  }
+  if (updates.progressBarTheme !== undefined) {
+    fields.push('progress_bar_theme = ?');
+    values.push(updates.progressBarTheme);
   }
 
   if (fields.length === 0) {
@@ -251,6 +267,8 @@ export function setMetadata(key: string, value: string): void {
 
 export function resetAllData(): void {
   db.prepare('DELETE FROM bids').run();
+  // Reset the AUTOINCREMENT sequence so entry #s restart from 1 each session
+  db.prepare("DELETE FROM sqlite_sequence WHERE name = 'bids'").run();
   db.prepare('UPDATE metadata SET value = ? WHERE key = ?').run('0', 'current_total');
   db.prepare(`
     UPDATE settings SET
@@ -259,6 +277,7 @@ export function resetAllData(): void {
       logo_path = NULL,
       donation_levels = '[]',
       current_donation_level = NULL,
+      goal_reached_background_path = NULL,
       custom_background_path = NULL,
       custom_primary_color = '#2596be',
       custom_secondary_color = '#2596be',

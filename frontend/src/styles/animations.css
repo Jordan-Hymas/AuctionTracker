@@ -1,27 +1,3 @@
-/* Flash In Animation */
-@keyframes flashIn {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* Flash Out Animation */
-@keyframes flashOut {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-}
-
 /* Pulse Animation */
 @keyframes pulse {
   0%, 100% {
@@ -43,45 +19,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Slide In From Right */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Slide In From Left */
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Pop In Animation */
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -147,26 +84,6 @@
   }
 }
 
-/* Pattern Slide Reverse */
-@keyframes patternSlideReverse {
-  0% {
-    background-position: 40px 40px;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-
-/* Pattern Slide Horizontal */
-@keyframes patternSlideHorizontal {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 100px 0;
-  }
-}
-
 /* Float Up (Particles) */
 @keyframes floatUp {
   0% {
@@ -205,16 +122,6 @@
   }
 }
 
-/* Rotate Slow */
-@keyframes rotateSlow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Slide In Down */
 @keyframes slideInDown {
   from {
@@ -224,105 +131,6 @@
   to {
     opacity: 1;
     transform: translate(-50%, 0);
-  }
-}
-
-/* Flash Border */
-@keyframes flashBorder {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.5);
-  }
-}
-
-/* Gradient Slide Horizontal - For animated progress bar gradient */
-@keyframes gradientSlideHorizontal {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Diagonal Stripe Flow - Barber pole effect */
-@keyframes diagonalStripeFlow {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 56.57px 56.57px;
-  }
-}
-
-/* Wave Flow - Wave ripple effect */
-@keyframes waveFlow {
-  0% {
-    background-position: 0 50%;
-  }
-  100% {
-    background-position: 500px 50%;
-  }
-}
-
-/* Inner Glow Pulse - Idle state */
-@keyframes innerGlowPulse {
-  0%, 100% {
-    --glow-size: 15px;
-    --glow-opacity: 0.3;
-  }
-  50% {
-    --glow-size: 25px;
-    --glow-opacity: 0.5;
-  }
-}
-
-/* Inner Glow Pulse Active - Active state */
-@keyframes innerGlowPulseActive {
-  0% {
-    --glow-size: 20px;
-    --glow-opacity: 0.6;
-  }
-  100% {
-    --glow-size: 30px;
-    --glow-opacity: 1.0;
-  }
-}
-
-/* Border Race - Racing light around border */
-@keyframes borderRace {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 200% 0%;
-  }
-}
-
-/* Border Pulse Expand - Expanding border on updates */
-@keyframes borderPulseExpand {
-  0% {
-    box-shadow: 0 0 0 0 rgba(226, 71, 37, 0.9);
-  }
-  100% {
-    box-shadow: 0 0 0 20px rgba(226, 71, 37, 0);
-  }
-}
-
-/* Corner Pulse - Corner accent lights */
-@keyframes cornerPulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
   }
 }
 

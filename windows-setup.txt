@@ -1,0 +1,62 @@
+AuctionTracker Windows Packaging + Installer Guide
+Updated: February 24, 2026
+
+Purpose
+This guide walks through building Windows deliverables from this repo and installing the app with the NSIS setup wizard.
+
+Prerequisites on the Windows machine
+1. Install Git for Windows.
+2. Install Node.js 20 LTS (includes npm).
+3. Use PowerShell or Command Prompt with permission to run npm commands.
+
+Clone and install dependencies
+1. Open a terminal.
+2. Clone and enter the project:
+   git clone <YOUR_REPO_URL>
+   cd AuctionTracker
+3. Install all root dependencies:
+   npm ci
+4. Install frontend and backend dependencies:
+   npm --prefix frontend ci
+   npm --prefix backend ci
+
+Build options
+Option A: Build the Windows installer (.exe with setup wizard)
+1. Run:
+   npm run dist:win
+2. Output is written to:
+   release\
+3. Main file to distribute:
+   AuctionTracker Setup <version>.exe
+
+Option B: Build a Windows zip package (portable app artifact)
+1. Run:
+   npm run build:electron
+   npx electron-builder --win zip
+2. Output is written to:
+   release\
+3. Main file to distribute:
+   AuctionTracker-<version>-win.zip
+
+Installer wizard flow (what the user sees)
+1. Welcome page with app title and NPCE branding.
+2. License page (text from build/license.txt).
+3. Install location page (user can choose folder).
+4. Install progress page.
+5. Finish page.
+
+Install and test on Windows
+1. Double-click the generated "AuctionTracker Setup <version>.exe".
+2. Complete the wizard and install.
+3. Launch AuctionTracker from Start Menu or Desktop shortcut.
+4. Confirm both Electron windows open (Display and Control).
+5. Confirm LAN control link works from another device:
+   http://<LAN_IP>:<PORT>/control
+
+Troubleshooting
+1. If build fails on native modules:
+   - reinstall dependencies with npm ci at root, frontend, and backend.
+2. If installer runs but LAN access fails:
+   - allow AuctionTracker through Windows Defender Firewall on Private networks.
+3. If ports are busy:
+   - app uses configured fallback ports; close conflicting apps if needed.

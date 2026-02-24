@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { bidApi, settingsApi, uploadApi, exportApi, adminApi } from '../services/api';
-import { Bid, NewBid } from '../types/bid';
+import { Bid } from '../types/bid';
 import { Settings, UpdateSettings } from '../types/settings';
 
 interface AuctionContextValue {
@@ -24,6 +24,8 @@ interface AuctionContextValue {
   removeLogo: () => Promise<void>;
   uploadBackground: (file: File) => Promise<void>;
   removeBackground: () => Promise<void>;
+  uploadGoalReachedBackground: (file: File) => Promise<void>;
+  removeGoalReachedBackground: () => Promise<void>;
   exportCSV: () => Promise<void>;
   resetAuction: () => Promise<void>;
   refreshData: () => Promise<void>;
@@ -58,9 +60,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       setGoalAmount(settingsData.goalAmount);
       setRecentBids(bidsData);
       setCurrentTotal(statsData.currentTotal);
-      if (bidsData.length > 0) {
-        setLastBid(bidsData[0]);
-      }
+      setLastBid(bidsData.length > 0 ? bidsData[0] : null);
     } catch (error) {
       console.error('Error loading initial data:', error);
     } finally {
@@ -117,12 +117,20 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       setLastUpdateTime(Date.now());
     };
 
+    const handleAdminReset = (data: { timestamp: number }) => {
+      console.log('🔄 ADMIN RESET RECEIVED:', data);
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    };
+
     console.log('📡 Setting up WebSocket event listeners...');
     on('state:initial', handleInitialState);
     on('bid:added', handleBidAdded);
     on('bid:undone', handleBidUndone);
     on('settings:updated', handleSettingsUpdated);
     on('logo:updated', handleLogoUpdated);
+    on('admin:reset', handleAdminReset);
 
     return () => {
       console.log('📡 Cleaning up WebSocket event listeners...');
@@ -131,6 +139,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       off('bid:undone', handleBidUndone);
       off('settings:updated', handleSettingsUpdated);
       off('logo:updated', handleLogoUpdated);
+      off('admin:reset', handleAdminReset);
     };
   }, [on, off]);
 
@@ -147,8 +156,17 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
   const undoLastBid = useCallback(async () => {
     try {
-      await bidApi.undoLast();
-      // WebSocket will handle the update
+      const result = await bidApi.undoLast();
+
+      // Apply immediately so the caller sees the subtraction even if the
+      // socket event is delayed/missed. WebSocket remains the source of truth.
+      setCurrentTotal(result.newTotal);
+      setRecentBids((prev) => {
+        const filtered = prev.filter((b) => b.id !== result.removedBid?.id);
+        setLastBid(filtered.length > 0 ? filtered[0] : null);
+        return filtered;
+      });
+      setLastUpdateTime(Date.now());
     } catch (error) {
       console.error('Error undoing bid:', error);
       throw error;
@@ -216,6 +234,30 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     }
   }, [settings]);
 
+  const uploadGoalReachedBackground = useCallback(async (file: File) => {
+    try {
+      const { goalReachedBackgroundUrl } = await uploadApi.uploadGoalReachedBackground(file);
+      if (settings) {
+        setSettings({ ...settings, goalReachedBackgroundPath: goalReachedBackgroundUrl });
+      }
+    } catch (error) {
+      console.error('Error uploading goal reached background:', error);
+      throw error;
+    }
+  }, [settings]);
+
+  const removeGoalReachedBackground = useCallback(async () => {
+    try {
+      await uploadApi.deleteGoalReachedBackground();
+      if (settings) {
+        setSettings({ ...settings, goalReachedBackgroundPath: null });
+      }
+    } catch (error) {
+      console.error('Error removing goal reached background:', error);
+      throw error;
+    }
+  }, [settings]);
+
   const exportCSV = useCallback(async () => {
     try {
       const blob = await exportApi.downloadCSV();
@@ -265,6 +307,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     removeLogo,
     uploadBackground,
     removeBackground,
+    uploadGoalReachedBackground,
+    removeGoalReachedBackground,
     exportCSV,
     resetAuction,
     refreshData,

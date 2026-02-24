@@ -1,0 +1,82 @@
+{
+  "name": "auction-tracker-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron desktop wrapper for Auction Tracker",
+  "author": "Jordan Hymas",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:electron": "wait-on tcp:3001 http://127.0.0.1:5173 && electron .",
+    "dev": "concurrently -k -n BACKEND,FRONTEND,ELECTRON -c yellow,cyan,green \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:electron\"",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:frontend:electron": "cross-env ELECTRON_BUILD=true npm --prefix frontend run build",
+    "build:electron": "npm run build:backend && npm run build:frontend:electron",
+    "dist": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "dist:mac": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+    "dist:mac:zip": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip",
+    "dist:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis",
+    "dist:win:zip": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win zip",
+    "dist:dir": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir --publish never"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.6.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
+    "png2icons": "^2.0.1",
+    "wait-on": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.auctiontracker.desktop",
+    "productName": "AuctionTracker",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "backend/dist/**/*",
+      "frontend/dist/**/*"
+    ],
+    "extraResources": [],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "AuctionTracker",
+      "license": "build/license.txt",
+      "installerHeader": "build/installerHeader.bmp",
+      "include": "build/installer.nsh"
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "identity": null,
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.business"
+    }
+  }
+}
