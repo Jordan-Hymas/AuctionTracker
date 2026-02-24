@@ -11,14 +11,14 @@ import CustomThemePanel from '../components/control/CustomThemePanel';
 import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
 import ProgressBarThemePanel from '../components/control/ProgressBarThemePanel';
-import { adminApi } from '../services/api';
+import { adminApi, NetworkInfo } from '../services/api';
 import { useState, useEffect, useRef } from 'react';
 import { getTheme } from '../config/controlThemes';
 import { useResponsive } from '../hooks/useResponsive';
 
 export default function Control() {
   const { currentTotal, goalAmount, startingTotal, isConnected, isLoading, settings } = useAuction();
-  const [serverInfo, setServerInfo] = useState<{ ipAddresses: string[]; port: number } | null>(null);
+  const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
   const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
   const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
@@ -28,13 +28,13 @@ export default function Control() {
   const settingsPanelRef = useRef<HTMLDivElement>(null);
   const donationPanelRef = useRef<HTMLDivElement>(null);
   const theme = getTheme(themeMode);
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile, width } = useResponsive();
 
   useEffect(() => {
     const fetchServerInfo = async () => {
       try {
-        const info = await adminApi.getServerInfo();
-        setServerInfo(info);
+        const info = await adminApi.getNetworkInfo();
+        setNetworkInfo(info);
       } catch (error) {
         console.error('Failed to fetch server info:', error);
       }
@@ -118,12 +118,21 @@ export default function Control() {
   }
 
   const progress = goalAmount ? ((currentTotal - startingTotal) / (goalAmount - startingTotal)) * 100 : 0;
+  const accessHost = networkInfo?.lanIp || 'localhost';
+  const controlAccessUrl = networkInfo ? `http://${accessHost}:${networkInfo.port}/control` : '';
+  const mobileAccessUrl = networkInfo ? `http://${accessHost}:${networkInfo.port}/mobile` : '';
 
   // Responsive grid templates
   const getStatsGridCols = () => {
-    if (isMobile) return '1fr';
-    if (isTablet) return 'repeat(2, 1fr)';
-    return 'repeat(3, 1fr)';
+    if (width < 760) return '1fr';
+    if (width < 1024) return 'repeat(2, minmax(0, 1fr))';
+    return 'repeat(3, minmax(0, 1fr))';
+  };
+
+  const getRemoteAccessWidth = () => {
+    if (width < 760) return '100%';
+    if (width < 1280) return 'calc((100% - 0.75rem) / 2)';
+    return 'calc((100% - 1.5rem) / 3)';
   };
 
   return (
@@ -163,6 +172,8 @@ export default function Control() {
               justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: '0.75rem',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
             }}
           >
             <div>
@@ -181,8 +192,8 @@ export default function Control() {
                 Live bidding and display controls
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {!isMobile && serverInfo && serverInfo.ipAddresses.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {width >= 900 && networkInfo && (
                 <div
                   style={{
                     fontSize: '0.75rem',
@@ -193,7 +204,7 @@ export default function Control() {
                     transition: 'background-color 0.2s, color 0.2s',
                   }}
                 >
-                  Server {serverInfo.ipAddresses[0]}:{serverInfo.port}
+                  Server {networkInfo.lanIp || 'localhost'}:{networkInfo.port}
                 </div>
               )}
               <div
@@ -224,6 +235,110 @@ export default function Control() {
             </div>
           </div>
 
+          {networkInfo && (
+            <div
+              style={{
+                marginBottom: '0.75rem',
+                backgroundColor: theme.colors.cardBg,
+                border: `1px solid ${theme.colors.cardBorder}`,
+                borderRadius: '8px',
+                padding: isMobile ? '0.75rem' : '0.85rem',
+                boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+                display: 'block',
+                width: getRemoteAccessWidth(),
+                maxWidth: '100%',
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: theme.colors.textSecondary,
+                  marginBottom: '0.55rem',
+                }}
+              >
+                Remote Access
+              </div>
+
+              <div style={{ display: 'grid', gap: '0.5rem', width: '100%', maxWidth: '100%' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : '64px minmax(0, 1fr)',
+                    alignItems: isMobile ? 'flex-start' : 'center',
+                    gap: '0.4rem',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }}
+                >
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.colors.textSecondary }}>
+                    Control
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                      fontSize: '0.8rem',
+                      color: theme.colors.textPrimary,
+                      backgroundColor: theme.colors.pageBg,
+                      border: `1px solid ${theme.colors.cardBorder}`,
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.5rem',
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                      maxWidth: '100%',
+                      minWidth: 0,
+                    }}
+                  >
+                    {controlAccessUrl}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : '64px minmax(0, 1fr)',
+                    alignItems: isMobile ? 'flex-start' : 'center',
+                    gap: '0.4rem',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }}
+                >
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.colors.textSecondary }}>
+                    Mobile
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                      fontSize: '0.8rem',
+                      color: theme.colors.textPrimary,
+                      backgroundColor: theme.colors.pageBg,
+                      border: `1px solid ${theme.colors.cardBorder}`,
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.5rem',
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                      maxWidth: '100%',
+                      minWidth: 0,
+                    }}
+                  >
+                    {mobileAccessUrl}
+                  </span>
+                </div>
+              </div>
+
+              {networkInfo.warning && (
+                <span style={{ display: 'block', marginTop: '0.35rem', color: theme.colors.red }}>
+                  {networkInfo.warning}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Stats Cards */}
           <div
             style={{
@@ -239,6 +354,7 @@ export default function Control() {
                 borderRadius: '8px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
+                minWidth: 0,
               }}
             >
               <div
@@ -272,6 +388,7 @@ export default function Control() {
                 borderRadius: '8px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
+                minWidth: 0,
               }}
             >
               <div
@@ -309,6 +426,7 @@ export default function Control() {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   transition: 'background-color 0.2s, box-shadow 0.2s',
+                  minWidth: 0,
                 }}
               >
                 <div

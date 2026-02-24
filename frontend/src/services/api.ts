@@ -2,6 +2,15 @@ import axios from 'axios';
 import { Bid, NewBid, BidStats } from '../types/bid';
 import { Settings, UpdateSettings } from '../types/settings';
 
+export interface NetworkInfo {
+  lanIp: string | null;
+  ipAddresses: string[];
+  port: number;
+  controlUrlLan: string | null;
+  controlUrlLocal: string;
+  warning: string | null;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 const api = axios.create({
@@ -129,8 +138,13 @@ export const adminApi = {
     return response.data;
   },
 
-  getServerInfo: async (): Promise<{ ipAddresses: string[]; port: number }> => {
+  getServerInfo: async (): Promise<NetworkInfo> => {
     const response = await api.get('/server-info');
+    return response.data;
+  },
+
+  getNetworkInfo: async (): Promise<NetworkInfo> => {
+    const response = await api.get('/network-info');
     return response.data;
   },
 };

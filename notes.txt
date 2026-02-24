@@ -18,16 +18,29 @@ Speed up the paddle animation so that it doesnt take so long to display the padd
 [X] Control Panel: Change name of displays "Normal" to "Fundraiser page"
 [X] Check mobile view, should allow you to enter bids without keyboard closing or have an enter button on the keyboard # only.
 [X] Fix the timestamps on the control panel recent bids section and also make sure the csv download shows it correctly.
+[X] Use Electronjs.org to make an exucatable for windows. https://www.electronjs.org/
+[X] Resolution to fit any display 1920-1080p
 
-[] Use Electronjs.org to make an exucatable for windows. https://www.electronjs.org/
+
 [] Works on Windows machine 
 [] Package the project and deploy on different pc's
-[] Resolution to fit any display 1920-1080p
 [] Clean the directory make sure everything looks great, package, deploy, and testing.
 [] Make sure everything stays centered on any display size
 
-
 # Final steps
+
+[] Fix control panel UI to show the correct IP address for each section. Then do the following...
+
+1: Clone repo onto windows machine manually install .env for everything 
+2: Test on windows PC (Fix any bugs or issues)
+3: Create .exe file and test (Fix any issues, test devices on network being able to access this)
+4: Create .exe file for macOS devices.
+5: Bundle with NPCE Logo, BGCA Logo, Background Image temp file. 
+6: Test sending .exe file from Legion desktop to work laptop.(Fix any issues, trial and error)
+7: Test on work displays for formatting issues, and firewall blockers.
+8: One final check on program before sending.
+9: Create a clean README.md file with images and post to github change from private to public
+
 
 [Claude] Clean the project remove all the junk not being used! Docker, images, loose code. 
 [Claude] Check for any latency concerns on slow networks and optimze. 

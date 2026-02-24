@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { resetAllData, getCurrentTotal, getRecentBids, getLastBid } from '../database/queries';
 import { broadcastSettingsUpdated, getIO } from '../websocket';
 import { SettingsService } from '../services/SettingsService';
-import os from 'os';
+import { buildNetworkInfo } from '../utils/network';
 
 const router = Router();
 
@@ -14,28 +14,16 @@ router.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// GET /api/v1/server-info - Get server network information
-router.get('/server-info', (req: Request, res: Response) => {
-  const networkInterfaces = os.networkInterfaces();
-  const addresses: string[] = [];
+const getNetworkInfo = (req: Request, res: Response) => {
+  const port = Number(req.app.get('serverPort') || process.env.PORT || 3001);
+  res.status(200).json(buildNetworkInfo(port));
+};
 
-  // Get all IPv4 addresses that are not internal (localhost)
-  for (const interfaceName in networkInterfaces) {
-    const iface = networkInterfaces[interfaceName];
-    if (iface) {
-      for (const alias of iface) {
-        if (alias.family === 'IPv4' && !alias.internal) {
-          addresses.push(alias.address);
-        }
-      }
-    }
-  }
+// GET /api/v1/server-info - Backward-compatible server network information
+router.get('/server-info', getNetworkInfo);
 
-  res.status(200).json({
-    ipAddresses: addresses,
-    port: process.env.PORT || 3001,
-  });
-});
+// GET /api/v1/network-info - Preferred network info endpoint
+router.get('/network-info', getNetworkInfo);
 
 // POST /api/v1/admin/reset - Reset all auction data
 router.post('/reset', async (req: Request, res: Response) => {

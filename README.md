@@ -1,197 +1,164 @@
-# Auction Thermometer
+# AuctionTracker
 
-A professional web-based auction thermometer application for live fundraising events. Features a clean main display with animated thermometer and a separate control panel for operators.
+AuctionTracker is a real-time fundraising application with a public display view and an operator control panel. It is designed for live events where bids need to update instantly across screens and devices.
 
-## Features
+The project includes:
+- A React frontend for display and control interfaces
+- A Node.js/Express backend with SQLite storage
+- Socket.IO for low-latency real-time updates
+- Electron packaging for desktop distribution on macOS and Windows
 
-- **Main Display** - Large thermometer visualization with smooth animations for projectors/TVs
-- **Control Panel** - Operator interface for bid entry, settings, and data management
-- **Real-time Updates** - WebSocket-powered live synchronization across all connected devices
-- **Customizable** - Upload logos, customize themes, set goals
-- **Portable** - Docker-containerized for easy deployment
-- **Data Export** - Export all bids to CSV with running totals
+## What the App Does
 
-## Quick Start (Docker)
+- Displays a live fundraising total and progress visuals
+- Provides a control panel for entering bids and managing settings
+- Synchronizes changes in real time across display, control, and mobile views
+- Supports LAN access so other devices can open the control/mobile routes
+- Packages as desktop installers for event deployment
 
-### Prerequisites
-- Docker and Docker Compose installed
-- Port 3000 available
+## Tech Stack
 
-### Run the Application
+- Frontend: React, TypeScript, Vite
+- Backend: Node.js, Express, TypeScript
+- Database: SQLite (`better-sqlite3`)
+- Real-time: Socket.IO
+- Desktop packaging: Electron + electron-builder
 
-```bash
-# Build and start all services
-docker-compose up -d
+## Repository Structure
 
-# View logs
-docker-compose logs -f
-
-# Access the application
-# Main Display: http://localhost:3000/
-# Control Panel: http://localhost:3000/control
-
-# Stop services
-docker-compose down
-
-# Reset all data (database and uploads)
-docker-compose down -v
-```
-
-## Development Setup
-
-### Prerequisites
-- Node.js 20+ and npm
-- Ports 3001 (backend) and 5173 (frontend) available
-
-### Backend Setup
-
-```bash
-cd backend
-npm install
-npm run dev    # Runs on http://localhost:3001
-```
-
-### Frontend Setup
-
-```bash
-# In a separate terminal
-cd frontend
-npm install
-npm run dev    # Runs on http://localhost:5173
-```
-
-The frontend Vite dev server will proxy API calls to the backend automatically.
-
-## How to Use
-
-### For Operators (Control Panel)
-
-1. Open `http://localhost:3000/control` on your laptop/tablet
-2. **Settings Panel**:
-   - Set starting total (e.g., $1,000)
-   - Set fundraising goal (e.g., $10,000)
-   - Upload your organization's logo
-   - Select a theme
-3. **Bid Entry**:
-   - Enter paddle number
-   - Enter bid amount (or use quick-add buttons: +$25, +$50, +$100, +$250)
-   - Click "Submit Bid"
-   - View recent bids in the history panel
-4. **Actions**:
-   - **Undo** - Remove the last bid
-   - **Export CSV** - Download all bids with timestamps and running totals
-   - **Reset** - Clear all data for a new event (with confirmation)
-
-### For Audience (Main Display)
-
-1. Open `http://localhost:3000/` on the projector/TV device
-2. The display shows:
-   - Animated thermometer filling as bids come in
-   - Large total amount with smooth count-up animation
-   - Organization logo (if uploaded)
-   - Optional "Last Bid" flash animation
-3. All updates happen in real-time automatically
-
-## Network Access
-
-To access from other devices on your network:
-
-1. Find your computer's IP address:
-   - macOS/Linux: `ifconfig | grep inet`
-   - Windows: `ipconfig`
-2. Access from any device on the same network:
-   - Display: `http://YOUR_IP:3000/`
-   - Control: `http://YOUR_IP:3000/control`
-
-Example: `http://192.168.1.100:3000/`
-
-## Architecture
-
-- **Frontend**: React 18 + TypeScript + Vite
-- **Backend**: Node.js + Express + TypeScript
-- **Database**: SQLite (local file storage)
-- **Real-time**: Socket.io (WebSockets)
-- **Image Processing**: Sharp (automatic logo optimization)
-- **Deployment**: Docker + Docker Compose + Nginx reverse proxy
-
-## Project Structure
-
-```
+```text
 AuctionTracker/
-├── backend/              # Node.js API server
-│   ├── src/
-│   │   ├── database/    # SQLite schema and queries
-│   │   ├── routes/      # API endpoints
-│   │   ├── services/    # Business logic
-│   │   └── index.ts     # Server entry point
-│   ├── data/            # SQLite DB and uploads (gitignored)
-│   └── Dockerfile
-├── frontend/            # React application
-│   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Display and Control pages
-│   │   ├── hooks/       # Custom hooks (WebSocket, animations)
-│   │   └── context/     # Global state management
-│   └── Dockerfile
-├── nginx/               # Reverse proxy
-│   ├── nginx.conf
-│   └── Dockerfile
-└── docker-compose.yml   # Container orchestration
+  backend/                 API, database, websocket server
+  frontend/                React app (display/control/mobile)
+  electron/                Electron main and preload scripts
+  release/                 Packaging output (generated)
+  package.json             Root scripts for Electron workflows
 ```
 
-## Environment Variables
+## Clone and Setup
 
-### Backend (.env)
-```
-NODE_ENV=production
-PORT=3001
-DATABASE_PATH=/app/data/auction.db
-UPLOAD_DIR=/app/data/uploads
-CORS_ORIGIN=*
-```
+### 1. Clone
 
-### Frontend (.env)
-```
-VITE_API_URL=/api/v1
-VITE_WS_URL=/ws
-```
-
-## Troubleshooting
-
-### Docker issues
 ```bash
-# Rebuild containers
-docker-compose build --no-cache
-
-# Check service status
-docker-compose ps
-
-# View specific service logs
-docker-compose logs backend
-docker-compose logs frontend
+git clone <your-repo-url>
+cd AuctionTracker
 ```
 
-### Development issues
-```bash
-# Backend not starting
-cd backend
-rm -rf node_modules package-lock.json
-npm install
+### 2. Install dependencies
 
-# Frontend not starting
-cd frontend
-rm -rf node_modules package-lock.json
+Install root dependencies (Electron/build tooling and runtime deps):
+
+```bash
 npm install
 ```
 
-### Database reset
-```bash
-# Docker
-docker-compose down -v
+Install backend and frontend dependencies:
 
-# Development
-rm backend/data/auction.db
+```bash
+npm --prefix backend install
+npm --prefix frontend install
 ```
+
+## Development
+
+Run full desktop development mode (backend + frontend + Electron):
+
+```bash
+npm run dev
+```
+
+Default development endpoints:
+- Frontend (Vite): `http://localhost:5173`
+- Backend API: `http://localhost:3001`
+
+## Production Runtime Behavior (Packaged App)
+
+When packaged and launched:
+- Electron starts the embedded backend server
+- The server binds to `0.0.0.0` for LAN access
+- It selects the first available port in this order:
+  - `5000`
+  - `5001`
+  - `5002`
+- Electron opens two windows automatically:
+  - Display: `/`
+  - Control: `/control`
+
+If no port is available, startup fails with an error dialog.
+
+## Build and Package with Electron
+
+### Build app artifacts (no installer)
+
+```bash
+npm run build:electron
+```
+
+### macOS package
+
+ZIP-only build (recommended for local testing):
+
+```bash
+npm run dist:mac:zip
+```
+
+Standard mac target (zip + dmg):
+
+```bash
+npm run dist:mac
+```
+
+Output is written to `release/`.
+
+### Windows package (.exe)
+
+Run this on a Windows machine:
+
+```bash
+npm run dist:win
+```
+
+This produces an NSIS installer `.exe` in `release\`.
+
+## Testing the macOS Build
+
+After `npm run dist:mac:zip`:
+
+```bash
+cp -R "release/mac-arm64/AuctionTracker.app" /Applications/
+open /Applications/AuctionTracker.app
+```
+
+If macOS blocks launch because the app is unsigned:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/AuctionTracker.app
+open /Applications/AuctionTracker.app
+```
+
+## Testing LAN Access
+
+In the running app, use the server IP/port shown in the control header. Other devices on the same network can use:
+
+- Control: `http://<LAN_IP>:<PORT>/control`
+- Mobile: `http://<LAN_IP>:<PORT>/mobile`
+
+## Common Commands
+
+```bash
+npm run dev             # Backend + frontend + Electron
+npm run build:electron  # Build backend and frontend for Electron
+npm run dist:mac:zip    # Build macOS ZIP artifact
+npm run dist:mac        # Build macOS targets
+npm run dist:win        # Build Windows NSIS installer (.exe)
+npm run dist:dir        # Build unpacked app directory
+```
+
+## Notes for Windows Deployment
+
+- Build the Windows installer on Windows for best compatibility
+- If LAN clients cannot connect, allow the app through Windows Defender Firewall (Private network)
+- Ensure one of ports `5000`, `5001`, or `5002` is available
 
 ## License
 

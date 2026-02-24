@@ -3,45 +3,65 @@ const path = require('path');
 const { spawn } = require('child_process');
 const http = require('http');
 
-const BACKEND_PORT = Number(process.env.BACKEND_PORT || 3001);
-const USE_EXTERNAL_BACKEND = process.env.ELECTRON_USE_EXTERNAL_BACKEND === '1';
 const IS_DEV = !app.isPackaged;
+const DEV_BACKEND_PORT = 3001;
+const DEV_FRONTEND_URL = 'http://127.0.0.1:5173';
+const EMBEDDED_PORT_CANDIDATES = [5000, 5001, 5002];
+const STARTUP_TIMEOUT_MS = 20000;
 
-let mainWindow = null;
+let displayWindow = null;
+let controlWindow = null;
 let backendProcess = null;
+let backendExitReason = null;
+let runtimeBaseUrl = null;
+let backendLogTail = [];
+
+function appendBackendLog(prefix, chunk) {
+  const text = String(chunk);
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  for (const line of lines) {
+    backendLogTail.push(`${prefix}${line}`);
+  }
+  if (backendLogTail.length > 30) {
+    backendLogTail = backendLogTail.slice(-30);
+  }
+}
 
 function getBackendPaths() {
-  if (IS_DEV) {
-    const root = path.resolve(__dirname, '..');
-    return {
-      entry: path.join(root, 'backend', 'dist', 'index.js'),
-      cwd: path.join(root, 'backend'),
-    };
-  }
-
+  const root = path.resolve(__dirname, '..');
+  const packagedAppRoot = app.getAppPath();
   return {
-    entry: path.join(process.resourcesPath, 'backend', 'dist', 'index.js'),
-    cwd: path.join(process.resourcesPath, 'backend'),
+    entry: IS_DEV
+      ? path.join(root, 'backend', 'dist', 'index.js')
+      : path.join(packagedAppRoot, 'backend', 'dist', 'index.js'),
+    cwd: IS_DEV
+      ? path.join(root, 'backend')
+      : path.dirname(packagedAppRoot),
   };
 }
 
 function getBackendEnv() {
+  const root = path.resolve(__dirname, '..');
   const appDataDir = path.join(app.getPath('userData'), 'data');
   const uploadDir = path.join(appDataDir, 'uploads');
+  const frontendDistPath = IS_DEV
+    ? path.join(root, 'frontend', 'dist')
+    : path.join(app.getAppPath(), 'frontend', 'dist');
 
   return {
     ...process.env,
-    NODE_ENV: IS_DEV ? 'development' : 'production',
-    PORT: String(BACKEND_PORT),
+    NODE_ENV: 'production',
+    ELECTRON_EMBEDDED: '1',
+    PORT_CANDIDATES: EMBEDDED_PORT_CANDIDATES.join(','),
     DATABASE_PATH: path.join(appDataDir, 'auction.db'),
     UPLOAD_DIR: uploadDir,
+    FRONTEND_DIST_PATH: frontendDistPath,
+    SERVE_FRONTEND: '1',
     CORS_ORIGIN: '*',
   };
 }
 
 function startBackend() {
-  if (USE_EXTERNAL_BACKEND) return;
-
   const { entry, cwd } = getBackendPaths();
   backendProcess = spawn(process.execPath, [entry], {
     cwd,
@@ -53,15 +73,18 @@ function startBackend() {
   });
 
   backendProcess.stdout.on('data', (data) => {
+    appendBackendLog('[backend] ', data);
     process.stdout.write(`[backend] ${data}`);
   });
 
   backendProcess.stderr.on('data', (data) => {
+    appendBackendLog('[backend] ', data);
     process.stderr.write(`[backend] ${data}`);
   });
 
   backendProcess.on('exit', (code, signal) => {
     const reason = code !== null ? `code ${code}` : `signal ${signal}`;
+    backendExitReason = reason;
     console.log(`[backend] exited with ${reason}`);
   });
 }
@@ -72,10 +95,36 @@ function stopBackend() {
   }
 }
 
-function waitForBackend(timeoutMs = 15000) {
-  const start = Date.now();
-  const url = `http://127.0.0.1:${BACKEND_PORT}/api/v1/health`;
+function getJson(url) {
+  return new Promise((resolve, reject) => {
+    const req = http.get(url, (res) => {
+      if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 500) {
+        res.resume();
+        reject(new Error(`Unexpected response ${res.statusCode || 'unknown'}`));
+        return;
+      }
 
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(1500, () => req.destroy());
+  });
+}
+
+function waitForUrl(url, timeoutMs = STARTUP_TIMEOUT_MS) {
+  const start = Date.now();
   return new Promise((resolve, reject) => {
     const check = () => {
       const req = http.get(url, (res) => {
@@ -96,7 +145,7 @@ function waitForBackend(timeoutMs = 15000) {
 
     const retry = () => {
       if (Date.now() - start > timeoutMs) {
-        reject(new Error(`Backend did not start within ${timeoutMs}ms`));
+        reject(new Error(`Timed out waiting for ${url}`));
         return;
       }
       setTimeout(check, 300);
@@ -106,12 +155,46 @@ function waitForBackend(timeoutMs = 15000) {
   });
 }
 
-async function createMainWindow() {
-  mainWindow = new BrowserWindow({
+async function waitForEmbeddedNetworkInfo(timeoutMs = STARTUP_TIMEOUT_MS) {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    if (backendExitReason) {
+      const recentLog = backendLogTail.length > 0
+        ? `\nRecent backend logs:\n${backendLogTail.slice(-10).join('\n')}`
+        : '';
+      throw new Error(
+        `Embedded server exited before startup (${backendExitReason}).${recentLog}`
+      );
+    }
+
+    for (const port of EMBEDDED_PORT_CANDIDATES) {
+      try {
+        const info = await getJson(`http://127.0.0.1:${port}/api/v1/network-info`);
+        if (info && typeof info.port === 'number') {
+          return info;
+        }
+      } catch (error) {
+        // Keep probing candidate ports until timeout.
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+
+  throw new Error(
+    `Embedded server did not become ready. Ensure one of ports 5000, 5001, or 5002 is free and allowed through firewall.`
+  );
+}
+
+async function createDisplayWindow(url) {
+  displayWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1080,
     minHeight: 700,
+    autoHideMenuBar: true,
+    title: 'AuctionTracker Display',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -119,31 +202,71 @@ async function createMainWindow() {
     },
   });
 
-  if (IS_DEV) {
-    await mainWindow.loadURL('http://127.0.0.1:5173');
-    return;
-  }
+  displayWindow.removeMenu();
+  await displayWindow.loadURL(url);
+  displayWindow.maximize();
+}
 
-  await mainWindow.loadFile(path.join(app.getAppPath(), 'frontend', 'dist', 'index.html'));
+async function createControlWindow(url) {
+  controlWindow = new BrowserWindow({
+    width: 1280,
+    height: 860,
+    minWidth: 980,
+    minHeight: 700,
+    autoHideMenuBar: true,
+    title: 'AuctionTracker Control',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  controlWindow.removeMenu();
+  await controlWindow.loadURL(url);
 }
 
 app.whenReady().then(async () => {
-  startBackend();
-
   try {
-    await waitForBackend();
-    await createMainWindow();
+    if (IS_DEV) {
+      await waitForUrl(`${DEV_FRONTEND_URL}/`);
+      await waitForUrl(`http://127.0.0.1:${DEV_BACKEND_PORT}/api/v1/health`);
+      runtimeBaseUrl = DEV_FRONTEND_URL;
+    } else {
+      startBackend();
+      const networkInfo = await waitForEmbeddedNetworkInfo();
+      runtimeBaseUrl = `http://localhost:${networkInfo.port}`;
+
+      console.log(`[electron] Embedded server port: ${networkInfo.port}`);
+      console.log(`[electron] LAN IP: ${networkInfo.lanIp || 'not detected'}`);
+      console.log(`[electron] Control URL (LAN): ${networkInfo.controlUrlLan || 'Unavailable'}`);
+      console.log(`[electron] Control URL (Local): ${networkInfo.controlUrlLocal}`);
+
+      if (!networkInfo.lanIp) {
+        dialog.showMessageBox({
+          type: 'warning',
+          title: 'LAN Address Not Found',
+          message: 'No LAN IPv4 address was detected.',
+          detail:
+            'Other devices may not reach the control panel. Check that you are connected to a network and allow this app through Windows Defender Firewall.',
+        });
+      }
+    }
+
+    await createDisplayWindow(`${runtimeBaseUrl}/`);
+    await createControlWindow(`${runtimeBaseUrl}/control`);
   } catch (error) {
     dialog.showErrorBox(
       'AuctionTracker Startup Error',
-      `Failed to start backend service.\n\n${error.message}`
+      `Failed to start application services.\n\n${error.message}\n\nTroubleshooting:\n1) Ensure ports 5000, 5001, 5002 are not in use.\n2) Allow the app through Windows Defender Firewall for private networks.`
     );
     app.quit();
   }
 
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      await createMainWindow();
+      await createDisplayWindow(`${runtimeBaseUrl}/`);
+      await createControlWindow(`${runtimeBaseUrl}/control`);
     }
   });
 });

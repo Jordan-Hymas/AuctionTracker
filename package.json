@@ -7,14 +7,26 @@
   "scripts": {
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
-    "dev:electron": "cross-env ELECTRON_USE_EXTERNAL_BACKEND=1 wait-on tcp:3001 http://127.0.0.1:5173 && electron .",
+    "dev:electron": "wait-on tcp:3001 http://127.0.0.1:5173 && electron .",
     "dev": "concurrently -k -n BACKEND,FRONTEND,ELECTRON -c yellow,cyan,green \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:electron\"",
     "build:backend": "npm --prefix backend run build",
     "build:frontend": "npm --prefix frontend run build",
-    "build:frontend:electron": "cross-env ELECTRON_BUILD=true VITE_API_URL=http://127.0.0.1:3001/api/v1 VITE_WS_URL=http://127.0.0.1:3001 npm --prefix frontend run build",
+    "build:frontend:electron": "cross-env ELECTRON_BUILD=true npm --prefix frontend run build",
     "build:electron": "npm run build:backend && npm run build:frontend:electron",
     "dist": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
-    "dist:mac": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac"
+    "dist:mac": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+    "dist:mac:zip": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip",
+    "dist:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis",
+    "dist:dir": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir --publish never"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
@@ -31,22 +43,15 @@
     },
     "files": [
       "electron/**/*",
+      "backend/dist/**/*",
       "frontend/dist/**/*"
     ],
-    "extraResources": [
-      {
-        "from": "backend/dist",
-        "to": "backend/dist"
-      },
-      {
-        "from": "backend/node_modules",
-        "to": "backend/node_modules"
-      },
-      {
-        "from": "backend/package.json",
-        "to": "backend/package.json"
-      }
-    ],
+    "extraResources": [],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
     "mac": {
       "identity": null,
       "target": [

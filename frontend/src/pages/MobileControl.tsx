@@ -13,6 +13,7 @@ export default function MobileControl() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
+  const maxDigits = settings?.paddleDigits ?? 3;
 
   // Auto-focus and keep keyboard open
   useEffect(() => {
@@ -32,9 +33,10 @@ export default function MobileControl() {
       return;
     }
 
-    // Validate paddle number is 1-4 digits only
-    if (!/^\d{1,4}$/.test(paddleNumber.trim())) {
-      setError('Paddle must be 1-4 digits');
+    // Validate paddle number against configured digit limit (exact count required)
+    const digitRegex = new RegExp(`^\\d{${maxDigits}}$`);
+    if (!digitRegex.test(paddleNumber.trim())) {
+      setError(`Paddle must be exactly ${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
       return;
     }
 
@@ -349,26 +351,29 @@ export default function MobileControl() {
               }}
             >
               Paddle Number
+              <span style={{ fontWeight: '600', color: '#64748b', textTransform: 'none', marginLeft: '0.35rem' }}>
+                ({maxDigits} digits)
+              </span>
             </label>
             <textarea
               ref={inputRef}
               rows={1}
               inputMode="numeric"
-              maxLength={4}
+              maxLength={maxDigits}
               value={paddleNumber}
               onChange={(e) => {
-                // Only allow digits, max 4
-                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                // Only allow digits up to configured paddle digit count.
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, maxDigits);
                 setPaddleNumber(value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="0000"
+              placeholder={'0'.repeat(maxDigits)}
               autoComplete="off"
               enterKeyHint="go"
               style={{
                 width: '100%',
                 padding: '1.25rem',
-                border: '3px solid #0f766e',
+                border: `3px solid ${paddleNumber.length > 0 && paddleNumber.length < maxDigits ? '#b91c1c' : '#0f766e'}`,
                 borderRadius: '16px',
                 fontSize: '2.5rem',
                 fontWeight: '700',
@@ -383,15 +388,20 @@ export default function MobileControl() {
                 fontFamily: 'inherit',
               }}
             />
+            {paddleNumber.length > 0 && paddleNumber.length < maxDigits && (
+              <div style={{ marginTop: '0.45rem', fontSize: '0.8rem', color: '#b91c1c', fontWeight: 600 }}>
+                {maxDigits - paddleNumber.length} more digit{maxDigits - paddleNumber.length === 1 ? '' : 's'} needed
+              </div>
+            )}
           </div>
 
           {/* Large Submit Button - Optimized for thumb tapping */}
           <button
             type="button"
-            disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
+            disabled={isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits}
             onPointerDown={(e) => {
               e.preventDefault(); // prevents focus loss → keyboard stays open
-              if (!isSubmitting && (useCustomAmount || currentLevel)) {
+              if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length === maxDigits) {
                 handleSubmit();
               }
             }}
@@ -400,12 +410,12 @@ export default function MobileControl() {
               padding: '2rem',
               border: 'none',
               borderRadius: '16px',
-              backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) ? '#cbd5e1' : '#0f766e',
+              backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? '#cbd5e1' : '#0f766e',
               color: '#ffffff',
               fontSize: '1.5rem',
               fontWeight: '800',
-              cursor: isSubmitting || (!useCustomAmount && !currentLevel) ? 'not-allowed' : 'pointer',
-              boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) ? 'none' : '0 8px 16px rgba(15, 118, 110, 0.4)',
+              cursor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? 'not-allowed' : 'pointer',
+              boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length !== maxDigits ? 'none' : '0 8px 16px rgba(15, 118, 110, 0.4)',
               WebkitAppearance: 'none',
               appearance: 'none',
               textTransform: 'uppercase',
