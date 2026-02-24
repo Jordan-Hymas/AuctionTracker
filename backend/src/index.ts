@@ -12,7 +12,7 @@ import uploadRouter from './routes/upload';
 import exportRouter from './routes/export';
 import adminRouter from './routes/admin';
 
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 const app = express();
 const httpServer = http.createServer(app);
 

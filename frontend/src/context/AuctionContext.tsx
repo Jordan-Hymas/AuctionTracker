@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { bidApi, settingsApi, uploadApi, exportApi, adminApi } from '../services/api';
-import { Bid, NewBid } from '../types/bid';
+import { Bid } from '../types/bid';
 import { Settings, UpdateSettings } from '../types/settings';
 
 interface AuctionContextValue {
