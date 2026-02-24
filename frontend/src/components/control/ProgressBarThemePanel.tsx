@@ -8,18 +8,19 @@ interface ProgressBarThemePanelProps {
 
 const PROGRESS_BAR_THEMES = [
   { value: 'thermostat', label: 'Thermostat' },
+  { value: 'capsule-v2', label: 'Default' },
 ];
 
 export default function ProgressBarThemePanel({ theme }: ProgressBarThemePanelProps) {
   const { settings, updateSettings } = useAuction();
-  const [progressBarTheme, setProgressBarTheme] = useState('thermostat');
+  const [progressBarTheme, setProgressBarTheme] = useState('capsule-v2');
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (settings) {
-      setProgressBarTheme(settings.progressBarTheme ?? 'thermostat');
+      setProgressBarTheme(settings.progressBarTheme ?? 'capsule-v2');
     }
   }, [settings]);
 
@@ -46,6 +47,10 @@ export default function ProgressBarThemePanel({ theme }: ProgressBarThemePanelPr
         borderRadius: '8px',
         padding: '1rem',
         boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >

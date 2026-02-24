@@ -10,10 +10,9 @@ import DonationLevelsPanel from '../components/control/DonationLevelsPanel';
 import CustomThemePanel from '../components/control/CustomThemePanel';
 import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
-import PaddleAnimationPanel from '../components/control/PaddleAnimationPanel';
 import ProgressBarThemePanel from '../components/control/ProgressBarThemePanel';
 import { adminApi } from '../services/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getTheme } from '../config/controlThemes';
 import { useResponsive } from '../hooks/useResponsive';
 
@@ -23,6 +22,9 @@ export default function Control() {
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
   const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
   const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
+  const [lowerRightRowHeight, setLowerRightRowHeight] = useState<number | null>(null);
+  const settingsPanelRef = useRef<HTMLDivElement>(null);
+  const donationPanelRef = useRef<HTMLDivElement>(null);
   const theme = getTheme(themeMode);
   const { isMobile, isTablet } = useResponsive();
 
@@ -51,6 +53,33 @@ export default function Control() {
   const toggleTheme = () => {
     setThemeMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
+
+  useEffect(() => {
+    if (activeTab !== 'setup' || isMobile) {
+      setLowerRightRowHeight(null);
+      return;
+    }
+
+    const measure = () => {
+      const settingsHeight = settingsPanelRef.current?.getBoundingClientRect().height ?? 0;
+      const donationHeight = donationPanelRef.current?.getBoundingClientRect().height ?? 0;
+      const gap = 16; // 1rem
+      const targetRowHeight = Math.max(0, settingsHeight - donationHeight - gap);
+      setLowerRightRowHeight(targetRowHeight > 0 ? targetRowHeight : null);
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(() => measure());
+    if (settingsPanelRef.current) observer.observe(settingsPanelRef.current);
+    if (donationPanelRef.current) observer.observe(donationPanelRef.current);
+
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [activeTab, isMobile, settings?.themeName]);
 
   if (isLoading) {
     return (
@@ -359,28 +388,63 @@ export default function Control() {
 
         {/* Tab Content */}
         {activeTab === 'setup' ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-              gap: '1rem',
-              marginBottom: '1rem',
-              alignItems: 'flex-start',
-            }}
-          >
-            {/* Left Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          isMobile ? (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: '1rem',
+                marginBottom: '1rem',
+                alignItems: 'flex-start',
+              }}
+            >
               <SettingsPanel theme={theme} />
-              <PaddleAnimationPanel theme={theme} />
+              <DonationLevelsPanel theme={theme} />
+              <LogoUploader theme={theme} />
               <ProgressBarThemePanel theme={theme} />
               {settings?.themeName === 'custom' && <CustomThemePanel theme={theme} />}
             </div>
-            {/* Right Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <DonationLevelsPanel theme={theme} />
-              <LogoUploader theme={theme} />
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1rem',
+                marginBottom: '1rem',
+                alignItems: 'flex-start',
+              }}
+            >
+              {/* Left Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div ref={settingsPanelRef}>
+                  <SettingsPanel theme={theme} />
+                </div>
+                {settings?.themeName === 'custom' && <CustomThemePanel theme={theme} />}
+              </div>
+
+              {/* Right Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div ref={donationPanelRef}>
+                  <DonationLevelsPanel theme={theme} />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'stretch',
+                    gap: '0.75rem',
+                    height: lowerRightRowHeight ? `${lowerRightRowHeight}px` : undefined,
+                  }}
+                >
+                  <div style={{ flex: '1 1 0', display: 'flex', minWidth: 0 }}>
+                    <LogoUploader theme={theme} />
+                  </div>
+                  <div style={{ flex: '1 1 0', display: 'flex', minWidth: 0 }}>
+                    <ProgressBarThemePanel theme={theme} />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )
         ) : (
           <div
             style={{

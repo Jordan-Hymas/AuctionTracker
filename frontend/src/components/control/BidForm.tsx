@@ -51,10 +51,10 @@ export default function BidForm({ theme }: BidFormProps) {
       return;
     }
 
-    // Validate paddle number against configured digit limit
-    const digitRegex = new RegExp(`^\\d{1,${maxDigits}}$`);
+    // Validate paddle number against configured digit limit (exact count required)
+    const digitRegex = new RegExp(`^\\d{${maxDigits}}$`);
     if (!digitRegex.test(paddleNumber.trim())) {
-      setError(`Paddle number must be 1–${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
+      setError(`Paddle number must be exactly ${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
       return;
     }
 
@@ -245,7 +245,7 @@ export default function BidForm({ theme }: BidFormProps) {
 
         <div style={{ marginBottom: '0.75rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
-            Paddle Number *
+            Paddle Number * <span style={{ fontWeight: '400', color: theme.colors.textSecondary }}>({maxDigits} digits)</span>
           </label>
           <textarea
             ref={inputRef}
@@ -263,14 +263,14 @@ export default function BidForm({ theme }: BidFormProps) {
                 handleSubmit();
               }
             }}
-            placeholder="e.g., 134"
+            placeholder={`e.g., ${'1'.padStart(maxDigits - 1, '0')}${maxDigits}`}
             disabled={isSubmitting}
             autoComplete="off"
             autoFocus
             style={{
               width: '100%',
               padding: '0.625rem',
-              border: `1px solid ${theme.colors.inputBorder}`,
+              border: `1px solid ${paddleNumber.length > 0 && paddleNumber.length < maxDigits ? theme.colors.redDark : theme.colors.inputBorder}`,
               borderRadius: '4px',
               fontSize: '1rem',
               backgroundColor: theme.colors.inputBg,
@@ -282,35 +282,40 @@ export default function BidForm({ theme }: BidFormProps) {
               fontFamily: 'inherit',
             }}
           />
+          {paddleNumber.length > 0 && paddleNumber.length < maxDigits && (
+            <p style={{ fontSize: '0.75rem', color: theme.colors.redDark, marginTop: '0.25rem' }}>
+              {maxDigits - paddleNumber.length} more digit{maxDigits - paddleNumber.length === 1 ? '' : 's'} needed
+            </p>
+          )}
         </div>
 
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
+          disabled={isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits}
           style={{
             width: '100%',
             padding: '0.75rem',
             border: 'none',
             borderRadius: '6px',
-            backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) ? theme.colors.cardBorder : theme.colors.blue,
-            color: isSubmitting || (!useCustomAmount && !currentLevel) ? theme.colors.textMuted : 'white',
-            cursor: isSubmitting || (!useCustomAmount && !currentLevel) ? 'not-allowed' : 'pointer',
+            backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? theme.colors.cardBorder : theme.colors.blue,
+            color: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? theme.colors.textMuted : 'white',
+            cursor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? 'not-allowed' : 'pointer',
             fontSize: '0.9375rem',
             fontWeight: '600',
-            boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
+            boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
             transition: 'all 0.2s ease',
             letterSpacing: '0.025em',
           }}
           onMouseEnter={(e) => {
-            if (!isSubmitting && (useCustomAmount || currentLevel)) {
+            if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length >= maxDigits) {
               e.currentTarget.style.backgroundColor = theme.colors.blueDark;
               e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
               e.currentTarget.style.transform = 'translateY(-1px)';
             }
           }}
           onMouseLeave={(e) => {
-            if (!isSubmitting && (useCustomAmount || currentLevel)) {
+            if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length >= maxDigits) {
               e.currentTarget.style.backgroundColor = theme.colors.blue;
               e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
               e.currentTarget.style.transform = 'translateY(0)';

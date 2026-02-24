@@ -54,6 +54,7 @@ export function initializeDatabase() {
       show_last_bid INTEGER DEFAULT 1,
       donation_levels TEXT DEFAULT '[]',
       current_donation_level REAL DEFAULT NULL,
+      goal_reached_background_path TEXT DEFAULT NULL,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -92,6 +93,11 @@ export function initializeDatabase() {
     db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_message TEXT DEFAULT NULL`);
   }
 
+  if (!columnNames.includes('goal_reached_background_path')) {
+    console.log('🔄 Adding goal_reached_background_path column to settings table');
+    db.exec(`ALTER TABLE settings ADD COLUMN goal_reached_background_path TEXT DEFAULT NULL`);
+  }
+
   if (!columnNames.includes('custom_background_path')) {
     console.log('🔄 Adding custom_background_path column to settings table');
     db.exec(`ALTER TABLE settings ADD COLUMN custom_background_path TEXT DEFAULT NULL`);
@@ -124,8 +130,11 @@ export function initializeDatabase() {
 
   if (!columnNames.includes('progress_bar_theme')) {
     console.log('🔄 Adding progress_bar_theme column to settings table');
-    db.exec(`ALTER TABLE settings ADD COLUMN progress_bar_theme TEXT DEFAULT 'thermostat'`);
+    db.exec(`ALTER TABLE settings ADD COLUMN progress_bar_theme TEXT DEFAULT 'capsule-v2'`);
   }
+
+  // Migrate removed 'capsule' (V1) value to 'capsule-v2'
+  db.prepare(`UPDATE settings SET progress_bar_theme = 'capsule-v2' WHERE progress_bar_theme = 'capsule'`).run();
 
   // Insert default settings if not exists
   const settingsCount = db.prepare('SELECT COUNT(*) as count FROM settings').get() as { count: number };

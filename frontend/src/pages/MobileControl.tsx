@@ -143,41 +143,29 @@ export default function MobileControl() {
           overflowX: 'hidden',
         }}
       >
-        {/* Status Messages */}
-        {error && (
-          <div
-            style={{
-              padding: '1rem',
-              backgroundColor: '#fee2e2',
-              color: '#991b1b',
-              borderRadius: '12px',
-              marginBottom: '1rem',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-              textAlign: 'center',
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            style={{
-              padding: '0.75rem',
-              backgroundColor: '#ccfbf1',
-              color: '#115e59',
-              borderRadius: '8px',
-              marginBottom: '1rem',
-              fontSize: '0.875rem',
-              fontWeight: '700',
-              textAlign: 'center',
-              border: '2px solid #0f766e',
-            }}
-          >
-            ✓ Bid Added!
-          </div>
-        )}
+        {/* Status Messages — fixed height slot, opacity toggle avoids layout shift */}
+        <div
+          style={{
+            padding: '0.75rem',
+            backgroundColor: error ? '#fee2e2' : '#ccfbf1',
+            color: error ? '#991b1b' : '#115e59',
+            borderRadius: '10px',
+            marginBottom: '1rem',
+            fontSize: '0.9375rem',
+            fontWeight: '600',
+            textAlign: 'center',
+            border: success ? '2px solid #0f766e' : 'none',
+            opacity: error || success ? 1 : 0,
+            transition: 'opacity 0.15s',
+            pointerEvents: 'none',
+            minHeight: '2.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {error || (success ? '✓ Bid Added!' : '')}
+        </div>
 
         {/* Active Level Selector */}
         {!useCustomAmount && settings?.donationLevels && settings.donationLevels.length > 0 && (
@@ -215,7 +203,7 @@ export default function MobileControl() {
                   <button
                     key={level}
                     type="button"
-                    onClick={() => updateSettings({ currentDonationLevel: level })}
+                    onPointerDown={(e) => { e.preventDefault(); updateSettings({ currentDonationLevel: level }); }}
                     style={{
                       padding: '0.875rem 0.5rem',
                       backgroundColor: isActive ? '#0f766e' : '#f8fafc',
@@ -400,11 +388,9 @@ export default function MobileControl() {
           {/* Large Submit Button - Optimized for thumb tapping */}
           <button
             type="button"
-            onClick={handleSubmit}
             disabled={isSubmitting || (!useCustomAmount && !currentLevel)}
-            onTouchStart={(e) => {
-              // Prevent focus loss on touch
-              e.preventDefault();
+            onPointerDown={(e) => {
+              e.preventDefault(); // prevents focus loss → keyboard stays open
               if (!isSubmitting && (useCustomAmount || currentLevel)) {
                 handleSubmit();
               }
@@ -436,10 +422,7 @@ export default function MobileControl() {
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button
                 type="button"
-                onClick={() => {
-                  undoLastBid();
-                  setConfirmUndo(false);
-                }}
+                onPointerDown={(e) => { e.preventDefault(); undoLastBid(); setConfirmUndo(false); }}
                 style={{
                   flex: 1,
                   padding: '1rem',
@@ -460,7 +443,7 @@ export default function MobileControl() {
               </button>
               <button
                 type="button"
-                onClick={() => setConfirmUndo(false)}
+                onPointerDown={(e) => { e.preventDefault(); setConfirmUndo(false); }}
                 style={{
                   flex: 1,
                   padding: '1rem',
@@ -483,7 +466,7 @@ export default function MobileControl() {
           ) : (
             <button
               type="button"
-              onClick={() => setConfirmUndo(true)}
+              onPointerDown={(e) => { e.preventDefault(); setConfirmUndo(true); }}
               style={{
                 width: '100%',
                 padding: '1rem',

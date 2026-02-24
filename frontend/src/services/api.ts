@@ -88,6 +88,22 @@ export const uploadApi = {
   deleteBackground: async (): Promise<void> => {
     await api.delete('/upload/background');
   },
+
+  uploadGoalReachedBackground: async (file: File): Promise<{ goalReachedBackgroundUrl: string }> => {
+    const formData = new FormData();
+    formData.append('background', file);
+
+    const response = await api.post('/upload/goal-reached-background', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteGoalReachedBackground: async (): Promise<void> => {
+    await api.delete('/upload/goal-reached-background');
+  },
 };
 
 // ==================== EXPORT API ====================

@@ -18,13 +18,18 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const normalizeThemeName = (name: string | null | undefined): string => {
+    if (!name) return 'boysGirlsClub';
+    if (name === 'modern' || name === 'modernDots') return 'NPCE';
+    return THEMES[name] ? name : 'boysGirlsClub';
+  };
 
   useEffect(() => {
     if (settings) {
       setStartingTotal(settings.startingTotal.toString());
       setGoalAmount(settings.goalAmount?.toString() || '');
       setPaddleDigits(settings.paddleDigits ?? 3);
-      setThemeName(settings.themeName);
+      setThemeName(normalizeThemeName(settings.themeName));
       setShowLastBid(settings.showLastBid);
     }
   }, [settings]);
@@ -44,7 +49,8 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         return;
       }
 
-      if (themeName === 'custom') {
+      const resolvedThemeName = normalizeThemeName(themeName);
+      if (resolvedThemeName === 'custom') {
         // For custom theme: save basic settings + restore persisted custom colors/background
         const customPrimary = settings?.customPrimaryColor || '#2596be';
         const customSecondary = settings?.customSecondaryColor || '#2596be';
@@ -54,7 +60,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
           startingTotal: starting,
           goalAmount: goal,
           paddleDigits,
-          themeName,
+          themeName: resolvedThemeName,
           themePrimaryColor: customPrimary,
           themeSecondaryColor: customSecondary,
           themeBackgroundType: hasBackground ? 'image' : 'solid',
@@ -63,13 +69,13 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
           showLastBid,
         });
       } else {
-        const theme = THEMES[themeName];
+        const theme = THEMES[resolvedThemeName];
 
         await updateSettings({
           startingTotal: starting,
           goalAmount: goal,
           paddleDigits,
-          themeName,
+          themeName: resolvedThemeName,
           themePrimaryColor: theme.primaryColor,
           themeSecondaryColor: theme.secondaryColor,
           themeBackgroundType: theme.backgroundType,

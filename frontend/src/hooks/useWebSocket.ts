@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const WS_URL = import.meta.env.VITE_WS_URL || '';
+const getDefaultWsUrl = () => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+
+  // In Vite dev, connect directly to backend to avoid proxy ws EPIPE noise.
+  if (import.meta.env.DEV) {
+    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    return `${protocol}://${window.location.hostname}:3001`;
+  }
+
+  // In production, empty URL means same-origin.
+  return '';
+};
+
+const WS_URL = getDefaultWsUrl();
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
@@ -11,7 +24,7 @@ export function useWebSocket() {
     // Connect to WebSocket server
     const socket = io(WS_URL, {
       path: '/ws/socket.io',
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,

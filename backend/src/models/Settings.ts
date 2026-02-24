@@ -15,6 +15,7 @@ export interface Settings {
   goalReachedEnabled: boolean;
   goalReachedManualTotal: number | null;
   goalReachedMessage: string | null;
+  goalReachedBackgroundPath: string | null;
   customBackgroundPath: string | null;
   customPrimaryColor: string;
   customSecondaryColor: string;
@@ -41,6 +42,7 @@ export interface UpdateSettings {
   goalReachedEnabled?: boolean;
   goalReachedManualTotal?: number | null;
   goalReachedMessage?: string | null;
+  goalReachedBackgroundPath?: string | null;
   customBackgroundPath?: string | null;
   customPrimaryColor?: string;
   customSecondaryColor?: string;

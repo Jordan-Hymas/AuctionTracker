@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { resetAllData } from '../database/queries';
-import { broadcastSettingsUpdated } from '../websocket';
+import { resetAllData, getCurrentTotal, getRecentBids, getLastBid } from '../database/queries';
+import { broadcastSettingsUpdated, getIO } from '../websocket';
 import { SettingsService } from '../services/SettingsService';
 import os from 'os';
 
@@ -52,6 +52,14 @@ router.post('/reset', async (req: Request, res: Response) => {
 
     const settings = await SettingsService.getSettings();
     broadcastSettingsUpdated(settings);
+    const io = getIO();
+    io.emit('state:initial', {
+      currentTotal: getCurrentTotal(),
+      settings,
+      lastBid: getLastBid() ?? null,
+      recentBids: getRecentBids(10),
+    });
+    io.emit('admin:reset', { timestamp: Date.now() });
 
     res.json({
       success: true,

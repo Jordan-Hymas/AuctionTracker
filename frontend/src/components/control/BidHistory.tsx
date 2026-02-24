@@ -93,7 +93,7 @@ export default function BidHistory({ theme }: BidHistoryProps) {
                   Amount
                 </th>
                 <th style={{ padding: '0.75rem', fontWeight: '600', fontSize: '0.875rem', color: theme.colors.textSecondary, textAlign: 'right', transition: 'color 0.2s' }}>
-                  Time
+                  #
                 </th>
               </tr>
             </thead>
@@ -113,8 +113,8 @@ export default function BidHistory({ theme }: BidHistoryProps) {
                   <td style={{ padding: '0.75rem', fontSize: '0.875rem', textAlign: 'right', fontWeight: index === 0 ? '600' : '400', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
                     {formatCurrency(bid.amount)}
                   </td>
-                  <td style={{ padding: '0.75rem', fontSize: '0.875rem', textAlign: 'right', color: theme.colors.textSecondary, transition: 'color 0.2s' }}>
-                    {new Date(bid.timestamp).toLocaleTimeString()}
+                  <td style={{ padding: '0.75rem', fontSize: '0.875rem', textAlign: 'right', color: theme.colors.textSecondary, fontVariantNumeric: 'tabular-nums', transition: 'color 0.2s' }}>
+                    #{bid.id}
                   </td>
                 </tr>
               ))}

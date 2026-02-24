@@ -5,6 +5,7 @@ import { useAnimatedValue } from '../../hooks/useAnimatedValue';
 interface PaddleNumberDisplayProps {
   lastBid: Bid | null;
   currentDonationLevel: number | null;
+  paddleDigits?: number;
   themeName?: string;
   primaryColor?: string;
   secondaryColor?: string;
@@ -24,13 +25,14 @@ interface QueuedItem {
 }
 
 // Tuning knobs ──────────────────────────────────────────────────────────────
-const EXIT_MS    = 420;   // how long the card takes to swivel out
-const ENTER_MS   = 500;   // how long the card takes to swivel in
-const DISPLAY_MS = 2200;  // pause so viewers can comfortably read the number
+const EXIT_MS    = 350;   // how long the card takes to swivel out
+const ENTER_MS   = 420;   // how long the card takes to swivel in
+const DISPLAY_MS = 1400;  // pause so viewers can comfortably read the number
 
 export default function PaddleNumberDisplay({
   lastBid,
   currentDonationLevel,
+  paddleDigits = 3,
   themeName = 'boysGirlsClub',
   primaryColor,
   secondaryColor,
@@ -103,6 +105,8 @@ export default function PaddleNumberDisplay({
     if (!renderedBidRef.current) {
       renderedBidRef.current = lastBid;
       setRenderedBid(lastBid);
+      // Keep the displayed total/progress in sync for the very first live bid.
+      onBidDisplayed?.(lastBid);
       return;
     }
 
@@ -141,9 +145,11 @@ export default function PaddleNumberDisplay({
     }).format(n);
 
   // ── Theme helpers ─────────────────────────────────────────────────────────
-  const isLight  = themeName === 'boysGirlsClub' || themeName === 'winter';
-  const isModern = themeName === 'modern';
+  const resolvedThemeName = (themeName === 'modern' || themeName === 'modernDots') ? 'NPCE' : themeName;
+  const isLight  = resolvedThemeName === 'boysGirlsClub' || resolvedThemeName === 'winter';
+  const isModern = resolvedThemeName === 'NPCE';
   const isCustom = themeName === 'custom';
+  const useModernPaddleNumberStyle = isModern || resolvedThemeName === 'boysGirlsClub';
 
   const paddleColor   = isCustom && primaryColor  ? primaryColor  : isLight ? '#2596be' : '#ffffff';
   const labelColor    = isCustom ? '#ffffff' : isModern ? '#1b3664' : isLight ? '#000000' : 'rgba(255,255,255,0.95)';
@@ -161,16 +167,9 @@ export default function PaddleNumberDisplay({
     ? `paddleCubeEnter ${ENTER_MS}ms cubic-bezier(0,0.4,0.6,1) forwards`
     : 'none';
 
-  // ── Empty state ───────────────────────────────────────────────────────────
-  if (!renderedBid) {
-    return (
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%' }}>
-        <div style={{ fontSize:'clamp(4rem,10vmin,8rem)', fontWeight:'700', color:'rgba(255,255,255,0.3)', textAlign:'center', animation:'pulse 3s ease-in-out infinite' }}>
-          Waiting for first bid...
-        </div>
-      </div>
-    );
-  }
+  const placeholderDigits = Math.max(1, Math.min(8, paddleDigits));
+  const paddleDisplayValue = renderedBid?.paddleNumber || 'X'.repeat(placeholderDigits);
+  const isPlaceholderState = !renderedBid;
 
   // ── Main render ───────────────────────────────────────────────────────────
   return (
@@ -199,7 +198,7 @@ export default function PaddleNumberDisplay({
         }}
       >
         {/* Shimmer sweep — fires briefly on every entry */}
-        {showShimmer && (
+        {showShimmer && !isPlaceholderState && (
           <div style={{ position:'absolute', inset:'-20% -10%', overflow:'hidden', pointerEvents:'none', zIndex:20 }}>
             <div style={{
               position: 'absolute', top:0, bottom:0, left:0, width:'40%',
@@ -240,22 +239,24 @@ export default function PaddleNumberDisplay({
         <div style={{
           fontSize: 'clamp(12rem,28vmin,32rem)',
           fontWeight: '900',
-          color: paddleColor,
+          color: isPlaceholderState
+            ? `${useModernPaddleNumberStyle ? '#ffffff' : paddleColor}cc`
+            : (useModernPaddleNumberStyle ? '#ffffff' : paddleColor),
           lineHeight: '1',
-          textShadow: isModern
+          textShadow: useModernPaddleNumberStyle
             ? '0 0 40px rgba(27,54,100,0.22), 0 0 80px rgba(27,54,100,0.12), 0 4px 20px rgba(0,0,0,0.5)'
             : isLight
             ? '0 0 30px rgba(37,150,190,0.25), 0 0 60px rgba(37,150,190,0.15), 0 4px 20px rgba(0,0,0,0.2)'
             : '0 0 40px rgba(59,130,246,0.25), 0 0 80px rgba(59,130,246,0.15), 0 4px 20px rgba(0,0,0,0.5)',
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          letterSpacing: '-0.02em',
+          letterSpacing: isPlaceholderState ? '0.02em' : '-0.02em',
           animation: animPhase === 'idle' ? 'floatSlow 6s ease-in-out infinite' : 'none',
         }}>
-          {renderedBid.paddleNumber}
+          {paddleDisplayValue}
         </div>
 
         {/* Donation level — uses displayedLevel so it stays in sync with the queue */}
-        {displayedLevel !== null && (
+        {displayedLevel !== null ? (
           <div style={{
             marginTop: '4rem',
             fontSize: 'clamp(5rem,12vmin,12rem)',
@@ -269,6 +270,17 @@ export default function PaddleNumberDisplay({
             animation: 'pulse 3s ease-in-out infinite',
           }}>
             {formatCurrency(animatedLevelAmount)}
+          </div>
+        ) : (
+          <div style={{
+            marginTop: '4rem',
+            fontSize: 'clamp(2rem,4vmin,3.5rem)',
+            fontWeight: '700',
+            color: `${labelColor}99`,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>
+            Set Active Level
           </div>
         )}
 

@@ -20,11 +20,6 @@ export default function CustomThemePanel({ theme }: CustomThemePanelProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const normalizePresetName = (name: string | null | undefined): string => {
-    if (!name) return 'boysGirlsClub';
-    if (name === 'modern' || name === 'modernDots') return 'NPCE';
-    return THEMES[name] ? name : 'boysGirlsClub';
-  };
 
   // Sync from persisted settings
   useEffect(() => {
@@ -33,7 +28,7 @@ export default function CustomThemePanel({ theme }: CustomThemePanelProps) {
       setSecondaryColor(settings.customSecondaryColor || '#2596be');
       if (settings.customColorPreset) {
         setColorMode('preset');
-        setColorPreset(normalizePresetName(settings.customColorPreset));
+        setColorPreset(settings.customColorPreset);
       } else {
         setColorMode('custom');
       }

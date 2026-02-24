@@ -3,7 +3,11 @@ interface AnimatedBackgroundProps {
   customBackgroundUrl?: string | null;
 }
 
-export default function AnimatedBackground({ themeName = 'boysGirlsClub', customBackgroundUrl }: AnimatedBackgroundProps) {
+export default function AnimatedBackground({ themeName: themeNameProp = 'boysGirlsClub', customBackgroundUrl }: AnimatedBackgroundProps) {
+  const themeName = (themeNameProp === 'NPCE' || themeNameProp === 'modern' || themeNameProp === 'modernDots')
+    ? 'modern'
+    : themeNameProp;
+
   // Floating particles
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
