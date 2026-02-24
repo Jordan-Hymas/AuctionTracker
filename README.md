@@ -88,37 +88,45 @@ If no port is available, startup fails with an error dialog.
 
 ## Build and Package with Electron
 
-### Build app artifacts (no installer)
+### 1. Build app artifacts (no installer)
 
 ```bash
 npm run build:electron
 ```
 
-### macOS package
+### 2. macOS outputs
 
-ZIP-only build (recommended for local testing):
+Note: macOS does not use `.exe` files. The installable app is distributed as `.dmg` and/or `.zip` containing `.app`.
+
+Build macOS ZIP (quick testing):
 
 ```bash
 npm run dist:mac:zip
 ```
 
-Standard mac target (zip + dmg):
+Build macOS DMG + ZIP:
 
 ```bash
 npm run dist:mac
 ```
 
-Output is written to `release/`.
+### 3. Windows outputs
 
-### Windows package (.exe)
+Run these on a Windows machine.
 
-Run this on a Windows machine:
+Build Windows installer `.exe` (NSIS wizard):
 
 ```bash
 npm run dist:win
 ```
 
-This produces an NSIS installer `.exe` in `release\`.
+Build Windows `.zip` (portable package):
+
+```bash
+npm run dist:win:zip
+```
+
+All packaging output is written to `release/`.
 
 ## Testing the macOS Build
 
@@ -151,6 +159,7 @@ npm run build:electron  # Build backend and frontend for Electron
 npm run dist:mac:zip    # Build macOS ZIP artifact
 npm run dist:mac        # Build macOS targets
 npm run dist:win        # Build Windows NSIS installer (.exe)
+npm run dist:win:zip    # Build Windows ZIP artifact
 npm run dist:dir        # Build unpacked app directory
 ```
 

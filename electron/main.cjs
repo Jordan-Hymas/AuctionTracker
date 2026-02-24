@@ -1,5 +1,6 @@
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 const http = require('http');
 
@@ -8,6 +9,7 @@ const DEV_BACKEND_PORT = 3001;
 const DEV_FRONTEND_URL = 'http://127.0.0.1:5173';
 const EMBEDDED_PORT_CANDIDATES = [5000, 5001, 5002];
 const STARTUP_TIMEOUT_MS = 20000;
+const FIRST_RUN_MARKER_FILE = '.auctiontracker-first-run-complete';
 
 let displayWindow = null;
 let controlWindow = null;
@@ -15,6 +17,89 @@ let backendProcess = null;
 let backendExitReason = null;
 let runtimeBaseUrl = null;
 let backendLogTail = [];
+
+function getRuntimeDataPaths() {
+  const appDataDir = path.join(app.getPath('userData'), 'data');
+  return {
+    appDataDir,
+    databasePath: path.join(appDataDir, 'auction.db'),
+    uploadDir: path.join(appDataDir, 'uploads'),
+  };
+}
+
+function getFrontendDistPath() {
+  const root = path.resolve(__dirname, '..');
+  return IS_DEV
+    ? path.join(root, 'frontend', 'dist')
+    : path.join(app.getAppPath(), 'frontend', 'dist');
+}
+
+function maybeResetEmbeddedDataOnFirstLaunch() {
+  if (IS_DEV) return;
+
+  const markerPath = path.join(app.getPath('userData'), FIRST_RUN_MARKER_FILE);
+  if (fs.existsSync(markerPath)) return;
+
+  const { appDataDir, databasePath, uploadDir } = getRuntimeDataPaths();
+  fs.mkdirSync(appDataDir, { recursive: true });
+
+  const databaseArtifacts = [
+    databasePath,
+    `${databasePath}-shm`,
+    `${databasePath}-wal`,
+    `${databasePath}-journal`,
+    `${databasePath}.backup`,
+  ];
+
+  for (const artifactPath of databaseArtifacts) {
+    try {
+      if (fs.existsSync(artifactPath)) {
+        fs.rmSync(artifactPath, { force: true });
+      }
+    } catch (error) {
+      console.warn(`[electron] Failed to remove ${artifactPath}: ${error.message}`);
+    }
+  }
+
+  try {
+    fs.rmSync(uploadDir, { recursive: true, force: true });
+  } catch (error) {
+    console.warn(`[electron] Failed to clear uploads directory ${uploadDir}: ${error.message}`);
+  }
+
+  fs.writeFileSync(markerPath, `${new Date().toISOString()}\n`, 'utf8');
+  console.log('[electron] First launch detected. Embedded app data was reset to a clean state.');
+}
+
+function getWindowIconPath() {
+  const root = path.resolve(__dirname, '..');
+  const candidates = IS_DEV
+    ? [path.join(root, 'build', 'icon.png'), path.join(root, 'icon.png')]
+    : process.platform === 'win32'
+      ? [path.join(process.resourcesPath, 'icon.ico'), path.join(process.resourcesPath, 'icon.png')]
+      : [path.join(process.resourcesPath, 'icon.png')];
+
+  return candidates.find((iconPath) => fs.existsSync(iconPath));
+}
+
+function applyDockIcon() {
+  if (process.platform !== 'darwin') return;
+
+  const root = path.resolve(__dirname, '..');
+  const candidates = IS_DEV
+    ? [path.join(root, 'build', 'icon.png'), path.join(root, 'icon.png')]
+    : [path.join(process.resourcesPath, 'icon.icns'), path.join(process.resourcesPath, 'icon.png')];
+
+  for (const iconPath of candidates) {
+    if (!fs.existsSync(iconPath)) continue;
+    const iconImage = nativeImage.createFromPath(iconPath);
+    if (!iconImage.isEmpty()) {
+      app.dock.setIcon(iconImage);
+      console.log(`[electron] Dock icon set from ${iconPath}`);
+      return;
+    }
+  }
+}
 
 function appendBackendLog(prefix, chunk) {
   const text = String(chunk);
@@ -41,21 +126,16 @@ function getBackendPaths() {
 }
 
 function getBackendEnv() {
-  const root = path.resolve(__dirname, '..');
-  const appDataDir = path.join(app.getPath('userData'), 'data');
-  const uploadDir = path.join(appDataDir, 'uploads');
-  const frontendDistPath = IS_DEV
-    ? path.join(root, 'frontend', 'dist')
-    : path.join(app.getAppPath(), 'frontend', 'dist');
+  const { databasePath, uploadDir } = getRuntimeDataPaths();
 
   return {
     ...process.env,
     NODE_ENV: 'production',
     ELECTRON_EMBEDDED: '1',
     PORT_CANDIDATES: EMBEDDED_PORT_CANDIDATES.join(','),
-    DATABASE_PATH: path.join(appDataDir, 'auction.db'),
+    DATABASE_PATH: databasePath,
     UPLOAD_DIR: uploadDir,
-    FRONTEND_DIST_PATH: frontendDistPath,
+    FRONTEND_DIST_PATH: getFrontendDistPath(),
     SERVE_FRONTEND: '1',
     CORS_ORIGIN: '*',
   };
@@ -188,6 +268,7 @@ async function waitForEmbeddedNetworkInfo(timeoutMs = STARTUP_TIMEOUT_MS) {
 }
 
 async function createDisplayWindow(url) {
+  const windowIconPath = getWindowIconPath();
   displayWindow = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -195,6 +276,7 @@ async function createDisplayWindow(url) {
     minHeight: 700,
     autoHideMenuBar: true,
     title: 'AuctionTracker Display',
+    icon: windowIconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -208,6 +290,7 @@ async function createDisplayWindow(url) {
 }
 
 async function createControlWindow(url) {
+  const windowIconPath = getWindowIconPath();
   controlWindow = new BrowserWindow({
     width: 1280,
     height: 860,
@@ -215,6 +298,7 @@ async function createControlWindow(url) {
     minHeight: 700,
     autoHideMenuBar: true,
     title: 'AuctionTracker Control',
+    icon: windowIconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -228,11 +312,14 @@ async function createControlWindow(url) {
 
 app.whenReady().then(async () => {
   try {
+    applyDockIcon();
+
     if (IS_DEV) {
       await waitForUrl(`${DEV_FRONTEND_URL}/`);
       await waitForUrl(`http://127.0.0.1:${DEV_BACKEND_PORT}/api/v1/health`);
       runtimeBaseUrl = DEV_FRONTEND_URL;
     } else {
+      maybeResetEmbeddedDataOnFirstLaunch();
       startBackend();
       const networkInfo = await waitForEmbeddedNetworkInfo();
       runtimeBaseUrl = `http://localhost:${networkInfo.port}`;
