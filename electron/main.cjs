@@ -297,10 +297,10 @@ async function createDisplayWindow(url) {
 async function createControlWindow(url) {
   const windowIconPath = getWindowIconPath();
   controlWindow = new BrowserWindow({
-    width: 1280,
+    width: 1320,
     height: 860,
-    minWidth: 980,
-    minHeight: 700,
+    minWidth: 600,
+    minHeight: 400,
     autoHideMenuBar: true,
     title: 'Auction Tracker (NPCE) - Control Panel',
     icon: windowIconPath,

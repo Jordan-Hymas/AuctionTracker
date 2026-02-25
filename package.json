@@ -48,7 +48,16 @@
     "files": [
       "electron/**/*",
       "backend/dist/**/*",
-      "frontend/dist/**/*"
+      "frontend/dist/**/*",
+      "!**/node_modules/better-sqlite3/build/Release/*.iobj",
+      "!**/node_modules/better-sqlite3/build/Release/*.ipdb",
+      "!**/node_modules/better-sqlite3/build/Release/*.lib",
+      "!**/node_modules/better-sqlite3/build/Release/test_extension.*",
+      "!**/node_modules/better-sqlite3/build/Release/obj/**",
+      "!**/node_modules/better-sqlite3/build/deps/**",
+      "!**/node_modules/better-sqlite3/build/*.vcxproj",
+      "!**/node_modules/better-sqlite3/deps/**",
+      "!**/node_modules/better-sqlite3/src/**"
     ],
     "extraResources": [],
     "win": {

@@ -170,7 +170,7 @@ export default function Control() {
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
           <div
             style={{
               display: 'flex',
@@ -355,7 +355,7 @@ export default function Control() {
             <div
               style={{
                 backgroundColor: theme.colors.cardBg,
-                padding: '1rem',
+                padding: '0.65rem',
                 borderRadius: '8px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
@@ -376,7 +376,7 @@ export default function Control() {
               </div>
               <div
                 style={{
-                  fontSize: '1.6rem',
+                  fontSize: '1.25rem',
                   fontWeight: '700',
                   color: theme.colors.blue,
                   transition: 'color 0.2s',
@@ -389,7 +389,7 @@ export default function Control() {
             <div
               style={{
                 backgroundColor: theme.colors.cardBg,
-                padding: '1rem',
+                padding: '0.65rem',
                 borderRadius: '8px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
@@ -410,7 +410,7 @@ export default function Control() {
               </div>
               <div
                 style={{
-                  fontSize: '1.6rem',
+                  fontSize: '1.25rem',
                   fontWeight: '700',
                   color: theme.colors.green,
                   transition: 'color 0.2s',
@@ -424,7 +424,7 @@ export default function Control() {
               <div
                 style={{
                   backgroundColor: theme.colors.cardBg,
-                  padding: '1rem',
+                  padding: '0.65rem',
                   borderRadius: '8px',
                   boxShadow: `0 1px 3px ${theme.colors.shadow}`,
                   display: 'flex',
@@ -449,7 +449,7 @@ export default function Control() {
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem', marginBottom: '0.4rem' }}>
                   <span
                     style={{
-                      fontSize: '1.5rem',
+                      fontSize: '1.2rem',
                       fontWeight: '700',
                       color: theme.colors.purple,
                       transition: 'color 0.2s',
@@ -500,8 +500,8 @@ export default function Control() {
             onMouseLeave={() => setHoveredTab(null)}
             style={{
               flex: 1,
-              padding: isMobile ? '0.75rem 0.5rem' : '0.875rem 1rem',
-              fontSize: isMobile ? '0.9375rem' : '1.0625rem',
+              padding: isMobile ? '0.75rem 0.5rem' : '0.55rem 1rem',
+              fontSize: '0.9375rem',
               fontWeight: '700',
               color: activeTab === 'setup' ? '#ffffff' : theme.colors.textSecondary,
               backgroundColor: activeTab === 'setup'
@@ -525,8 +525,8 @@ export default function Control() {
             onMouseLeave={() => setHoveredTab(null)}
             style={{
               flex: 1,
-              padding: isMobile ? '0.75rem 0.5rem' : '0.875rem 1rem',
-              fontSize: isMobile ? '0.9375rem' : '1.0625rem',
+              padding: isMobile ? '0.75rem 0.5rem' : '0.55rem 1rem',
+              fontSize: '0.9375rem',
               fontWeight: '700',
               color: activeTab === 'live' ? '#ffffff' : theme.colors.textSecondary,
               backgroundColor: activeTab === 'live'
@@ -634,7 +634,7 @@ export default function Control() {
         <div
           style={{
             backgroundColor: theme.colors.cardBg,
-            padding: '0.875rem 1rem',
+            padding: '0.6rem 1rem',
             borderRadius: '8px',
             boxShadow: `0 1px 3px ${theme.colors.shadow}`,
             display: 'flex',
@@ -715,8 +715,8 @@ export default function Control() {
         {/* Footer - Company Logo */}
         <div
           style={{
-            marginTop: '1.5rem',
-            padding: '1rem',
+            marginTop: '0.75rem',
+            padding: '0.5rem',
             borderTop: `1px solid ${theme.colors.cardBorder}`,
             display: 'flex',
             justifyContent: 'center',
@@ -728,7 +728,7 @@ export default function Control() {
             src="/branding/company-logo.png"
             alt="Created by"
             style={{
-              height: '50px',
+              height: '36px',
               width: 'auto',
               objectFit: 'contain',
               opacity: 0.7,
