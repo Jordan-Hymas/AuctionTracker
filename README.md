@@ -1,20 +1,23 @@
 # AuctionTracker
 
-AuctionTracker is a real-time fundraising application with a public display view and an operator control panel. It is designed for live events where bids need to update instantly across screens and devices.
+AuctionTracker is a real-time fundraising app for live events. It includes a public display, an operator control panel, and mobile-friendly LAN access.
 
-The project includes:
-- A React frontend for display and control interfaces
-- A Node.js/Express backend with SQLite storage
-- Socket.IO for low-latency real-time updates
-- Electron packaging for desktop distribution on macOS and Windows
+## Preview
 
-## What the App Does
+<video src="./GithubPhotos/animation.mp4" controls muted loop playsinline></video>
 
-- Displays a live fundraising total and progress visuals
-- Provides a control panel for entering bids and managing settings
-- Synchronizes changes in real time across display, control, and mobile views
-- Supports LAN access so other devices can open the control/mobile routes
-- Packages as desktop installers for event deployment
+![Main NPCE View](./GithubPhotos/mainNPCE.webp)
+![Main BGCA View](./GithubPhotos/mainBGCA.webp)
+![Setup Control](./GithubPhotos/setupControl.webp)
+![Live Event Control](./GithubPhotos/liveEventControl.webp)
+
+## Features
+
+- Live fundraising total and progress display
+- Operator control panel for bids and settings
+- Real-time sync across display, control, and mobile views
+- LAN support for on-site device access
+- Electron packaging for macOS and Windows
 
 ## Tech Stack
 
@@ -22,152 +25,63 @@ The project includes:
 - Backend: Node.js, Express, TypeScript
 - Database: SQLite (`better-sqlite3`)
 - Real-time: Socket.IO
-- Desktop packaging: Electron + electron-builder
+- Desktop: Electron + electron-builder
 
-## Repository Structure
+## Project Structure
 
 ```text
 AuctionTracker/
-  backend/                 API, database, websocket server
-  frontend/                React app (display/control/mobile)
-  electron/                Electron main and preload scripts
-  release/                 Packaging output (generated)
-  package.json             Root scripts for Electron workflows
+  backend/     API, database, websocket server
+  frontend/    React app (display/control/mobile)
+  electron/    Electron main + preload scripts
+  release/     Packaging output (generated)
 ```
 
-## Clone and Setup
-
-### 1. Clone
+## Setup
 
 ```bash
 git clone <your-repo-url>
 cd AuctionTracker
-```
-
-### 2. Install dependencies
-
-Install root dependencies (Electron/build tooling and runtime deps):
-
-```bash
 npm install
-```
-
-Install backend and frontend dependencies:
-
-```bash
 npm --prefix backend install
 npm --prefix frontend install
 ```
 
-## Development
-
-Run full desktop development mode (backend + frontend + Electron):
+## Run in Development
 
 ```bash
 npm run dev
 ```
 
-Default development endpoints:
-- Frontend (Vite): `http://localhost:5173`
+- Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:3001`
 
-## Production Runtime Behavior (Packaged App)
-
-When packaged and launched:
-- Electron starts the embedded backend server
-- The server binds to `0.0.0.0` for LAN access
-- It selects the first available port in this order:
-  - `5000`
-  - `5001`
-  - `5002`
-- Electron opens two windows automatically:
-  - Display: `/`
-  - Control: `/control`
-
-If no port is available, startup fails with an error dialog.
-
-## Build and Package with Electron
-
-### 1. Build app artifacts (no installer)
+## Build and Package
 
 ```bash
-npm run build:electron
+npm run build:electron  # Build backend + frontend for Electron
+npm run dist:dir        # Unpacked app directory
+npm run dist:mac:zip    # macOS ZIP
+npm run dist:mac        # macOS DMG + ZIP
+npm run dist:win        # Windows NSIS installer (.exe)
+npm run dist:win:zip    # Windows ZIP
 ```
 
-### 2. macOS outputs
+Packaging output is written to `release/`.
 
-Note: macOS does not use `.exe` files. The installable app is distributed as `.dmg` and/or `.zip` containing `.app`.
+## Packaged App Behavior
 
-Build macOS ZIP (quick testing):
+- Backend starts inside Electron
+- Server binds to `0.0.0.0` for LAN access
+- First available port is used from: `5000`, `5001`, `5002`
+- Electron opens display (`/`) and control (`/control`) windows automatically
 
-```bash
-npm run dist:mac:zip
-```
+## LAN Access
 
-Build macOS DMG + ZIP:
-
-```bash
-npm run dist:mac
-```
-
-### 3. Windows outputs
-
-Run these on a Windows machine.
-
-Build Windows installer `.exe` (NSIS wizard):
-
-```bash
-npm run dist:win
-```
-
-Build Windows `.zip` (portable package):
-
-```bash
-npm run dist:win:zip
-```
-
-All packaging output is written to `release/`.
-
-## Testing the macOS Build
-
-After `npm run dist:mac:zip`:
-
-```bash
-cp -R "release/mac-arm64/AuctionTracker.app" /Applications/
-open /Applications/AuctionTracker.app
-```
-
-If macOS blocks launch because the app is unsigned:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/AuctionTracker.app
-open /Applications/AuctionTracker.app
-```
-
-## Testing LAN Access
-
-In the running app, use the server IP/port shown in the control header. Other devices on the same network can use:
+From another device on the same network:
 
 - Control: `http://<LAN_IP>:<PORT>/control`
 - Mobile: `http://<LAN_IP>:<PORT>/mobile`
-
-## Common Commands
-
-```bash
-npm run dev             # Backend + frontend + Electron
-npm run build:electron  # Build backend and frontend for Electron
-npm run dist:mac:zip    # Build macOS ZIP artifact
-npm run dist:mac        # Build macOS targets
-npm run dist:win        # Build Windows NSIS installer (.exe)
-npm run dist:win:zip    # Build Windows ZIP artifact
-npm run dist:dir        # Build unpacked app directory
-```
-
-## Notes for Windows Deployment
-
-- Build the Windows installer on Windows for best compatibility
-- If LAN clients cannot connect, allow the app through Windows Defender Firewall (Private network)
-- Ensure one of ports `5000`, `5001`, or `5002` is available
 
 ## License
 
