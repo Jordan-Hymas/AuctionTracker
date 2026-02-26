@@ -2,15 +2,6 @@
 
 AuctionTracker is a real-time fundraising app for live events. It includes a public display, an operator control panel, and mobile-friendly LAN access.
 
-## Preview
-
-<video src="./GithubPhotos/animation.mp4" controls muted loop playsinline></video>
-
-![Main NPCE View](./GithubPhotos/mainNPCE.webp)
-![Main BGCA View](./GithubPhotos/mainBGCA.webp)
-![Setup Control](./GithubPhotos/setupControl.webp)
-![Live Event Control](./GithubPhotos/liveEventControl.webp)
-
 ## Features
 
 - Live fundraising total and progress display
@@ -36,6 +27,15 @@ AuctionTracker/
   electron/    Electron main + preload scripts
   release/     Packaging output (generated)
 ```
+
+## Preview
+
+<video src="./GithubPhotos/animation.mp4" controls muted loop playsinline></video>
+
+![Main NPCE View](./GithubPhotos/mainNPCE.webp)
+![Main BGCA View](./GithubPhotos/mainBGCA.webp)
+![Setup Control](./GithubPhotos/setupControl.webp)
+![Live Event Control](./GithubPhotos/liveEventControl.webp)
 
 ## Setup
 
