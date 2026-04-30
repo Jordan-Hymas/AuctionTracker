@@ -19,8 +19,8 @@ export function getAllBids(): Bid[] {
   return rows.map(snakeToCamel);
 }
 
-export function getRecentBids(limit: number = 10): Bid[] {
-  const rows = db.prepare('SELECT * FROM bids ORDER BY timestamp DESC LIMIT ?').all(limit);
+export function getRecentBids(): Bid[] {
+  const rows = db.prepare('SELECT * FROM bids ORDER BY timestamp DESC').all();
   return rows.map(snakeToCamel);
 }
 

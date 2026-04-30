@@ -101,6 +101,7 @@ export default function SettingsPanel({ theme }: SettingsPanelProps) {
         borderRadius: '8px',
         padding: '1rem',
         boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        border: `1px solid ${theme.colors.widgetBorder}`,
         transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >

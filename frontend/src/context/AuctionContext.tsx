@@ -19,6 +19,8 @@ interface AuctionContextValue {
   // Actions
   addBid: (paddleNumber: string, amount: number) => Promise<void>;
   undoLastBid: () => Promise<void>;
+  deleteBid: (id: number) => Promise<void>;
+  clearAllBids: () => Promise<void>;
   updateSettings: (updates: UpdateSettings) => Promise<void>;
   uploadLogo: (file: File) => Promise<void>;
   removeLogo: () => Promise<void>;
@@ -88,7 +90,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       console.log('🎯 REAL-TIME BID ADDED:', data);
       setCurrentTotal(data.newTotal);
       setLastBid(data.bid);
-      setRecentBids((prev) => [data.bid, ...prev.slice(0, 9)]);
+      setRecentBids((prev) => [data.bid, ...prev]);
       setLastUpdateTime(Date.now());
     };
 
@@ -117,6 +119,13 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       setLastUpdateTime(Date.now());
     };
 
+    const handleBidsCleared = (data: { newTotal: number }) => {
+      setCurrentTotal(data.newTotal);
+      setRecentBids([]);
+      setLastBid(null);
+      setLastUpdateTime(Date.now());
+    };
+
     const handleAdminReset = (data: { timestamp: number }) => {
       console.log('🔄 ADMIN RESET RECEIVED:', data);
       if (typeof window !== 'undefined') {
@@ -128,6 +137,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     on('state:initial', handleInitialState);
     on('bid:added', handleBidAdded);
     on('bid:undone', handleBidUndone);
+    on('bids:cleared', handleBidsCleared);
     on('settings:updated', handleSettingsUpdated);
     on('logo:updated', handleLogoUpdated);
     on('admin:reset', handleAdminReset);
@@ -137,6 +147,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       off('state:initial', handleInitialState);
       off('bid:added', handleBidAdded);
       off('bid:undone', handleBidUndone);
+      off('bids:cleared', handleBidsCleared);
       off('settings:updated', handleSettingsUpdated);
       off('logo:updated', handleLogoUpdated);
       off('admin:reset', handleAdminReset);
@@ -169,6 +180,35 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       setLastUpdateTime(Date.now());
     } catch (error) {
       console.error('Error undoing bid:', error);
+      throw error;
+    }
+  }, []);
+
+  const deleteBid = useCallback(async (id: number) => {
+    try {
+      const result = await bidApi.deleteById(id);
+      setCurrentTotal(result.newTotal);
+      setRecentBids((prev) => {
+        const filtered = prev.filter((b) => b.id !== id);
+        setLastBid(filtered.length > 0 ? filtered[0] : null);
+        return filtered;
+      });
+      setLastUpdateTime(Date.now());
+    } catch (error) {
+      console.error('Error deleting bid:', error);
+      throw error;
+    }
+  }, []);
+
+  const clearAllBids = useCallback(async () => {
+    try {
+      const result = await bidApi.clearAll();
+      setCurrentTotal(result.newTotal);
+      setRecentBids([]);
+      setLastBid(null);
+      setLastUpdateTime(Date.now());
+    } catch (error) {
+      console.error('Error clearing all bids:', error);
       throw error;
     }
   }, []);
@@ -302,6 +342,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     lastUpdateTime,
     addBid,
     undoLastBid,
+    deleteBid,
+    clearAllBids,
     updateSettings,
     uploadLogo,
     removeLogo,

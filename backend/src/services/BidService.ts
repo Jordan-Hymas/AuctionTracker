@@ -1,4 +1,4 @@
-import { addBid, deleteLastBid, getAllBids, getRecentBids, getBidCount, getTotalBidAmount, getCurrentTotal } from '../database/queries';
+import { addBid, deleteLastBid, getAllBids, getRecentBids, getBidCount, getTotalBidAmount, getCurrentTotal, getBidById, deleteBid, clearAllBids as clearAllBidsQuery } from '../database/queries';
 import { NewBid, Bid } from '../models/Bid';
 
 export class BidService {
@@ -29,12 +29,26 @@ export class BidService {
     return { removedBid, newTotal };
   }
 
+  static async deleteBidById(id: number): Promise<{ removedBid: Bid; newTotal: number }> {
+    const bid = getBidById(id);
+    if (!bid) throw new Error(`Bid #${id} not found`);
+    deleteBid(id);
+    const newTotal = getCurrentTotal();
+    return { removedBid: bid, newTotal };
+  }
+
+  static async clearAllBids(): Promise<{ newTotal: number }> {
+    clearAllBidsQuery();
+    const newTotal = getCurrentTotal();
+    return { newTotal };
+  }
+
   static async getAllBids(): Promise<Bid[]> {
     return getAllBids();
   }
 
-  static async getRecentBids(limit: number = 10): Promise<Bid[]> {
-    return getRecentBids(limit);
+  static async getRecentBids(): Promise<Bid[]> {
+    return getRecentBids();
   }
 
   static async getBidStats(): Promise<{

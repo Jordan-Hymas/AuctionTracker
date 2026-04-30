@@ -45,7 +45,7 @@ router.post('/reset', async (req: Request, res: Response) => {
       currentTotal: getCurrentTotal(),
       settings,
       lastBid: getLastBid() ?? null,
-      recentBids: getRecentBids(10),
+      recentBids: getRecentBids(),
     });
     io.emit('admin:reset', { timestamp: Date.now() });
 

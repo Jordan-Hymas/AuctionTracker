@@ -1,4 +1,25 @@
+
+# Eric notes on V1
+
+Notes for Jordan Auction Tracker
+
+-Unable to copy and paste the remote access addresses
+-Remote Access Addresses are wrong in the program. It needs to display the devices IP thats hosting the Tracking software, not the gateway
+-Having to always put 4 digits for paddle numbers is annoying, the paddles only go to 1100 so having to put a 0 at the start always is annoying. ie 0087 or 0136
+-Add a way to clear all bids
+-If you Undo a bid, you cannot submit another bid until you click in and out of the tracker window
+-Need a way to clear the paddle display, it still shows a number even if all bids are cleared
+-A way to have a starting bid/amount?
+-A way to reopen the Thermometer window if closed
+-Display window desyncs if it is not the active tab
+-A way to remove specific bids rather than undo only the last
+
+
 # Auction Tracker Program
+
+
+
+
 
 # DUE Feb 26th
 

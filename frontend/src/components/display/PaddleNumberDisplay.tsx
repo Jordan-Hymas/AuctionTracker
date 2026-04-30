@@ -135,6 +135,20 @@ export default function PaddleNumberDisplay({
     }
   }, [currentDonationLevel]);
 
+  // ── Reset all display state when bids are cleared ─────────────────────────
+  // When lastBid becomes null (e.g., Clear All Bids or Reset), drain the queue
+  // and return the display to the placeholder state.
+  useEffect(() => {
+    if (lastBid !== null) return;
+    queueRef.current = [];
+    isProcessingRef.current = false;
+    renderedBidRef.current = null;
+    setRenderedBid(null);
+    setAnimPhase('idle');
+    setShowShimmer(false);
+    setDisplayedLevel(currentDonationLevel ?? null);
+  }, [lastBid]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Animated level amount ─────────────────────────────────────────────────
   const { value: animatedLevelAmount } = useAnimatedValue(displayedLevel ?? 0, 1000);
 

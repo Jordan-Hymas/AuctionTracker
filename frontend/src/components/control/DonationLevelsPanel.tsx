@@ -89,6 +89,7 @@ export default function DonationLevelsPanel({ theme }: DonationLevelsPanelProps)
         backgroundColor: theme.colors.cardBg,
         borderRadius: '8px',
         boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        border: `1px solid ${theme.colors.widgetBorder}`,
         padding: '1rem',
         transition: 'background-color 0.2s, box-shadow 0.2s',
       }}

@@ -10,7 +10,7 @@ import GoalReachedDisplay from '../components/display/GoalReachedDisplay';
 import { generateThermometerGradient, hexToRgba, darkenColor, lightenColor } from '../utils/colorUtils';
 
 export default function Display() {
-  const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading } = useAuction();
+  const { currentTotal, goalAmount, startingTotal, lastBid, settings, isLoading, refreshData } = useAuction();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // ── Displayed total: advances only when a paddle is shown from the queue ──
@@ -45,6 +45,30 @@ export default function Display() {
       setDisplayedTotal(prev => Math.min(prev, currentTotal));
     }
     prevTotalRef.current = currentTotal;
+  }, [currentTotal]);
+
+  // Visibility-change handler: re-sync displayedTotal when the window regains focus.
+  // Browsers can throttle/suspend WebSocket delivery when a tab is backgrounded,
+  // so we force a full data refresh the moment the user brings the display back.
+  const wasHiddenRef = useRef(false);
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        wasHiddenRef.current = true;
+        refreshData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshData]);
+
+  // After refreshData updates currentTotal, snap displayedTotal to match
+  useEffect(() => {
+    if (wasHiddenRef.current && hasInitialized.current) {
+      setDisplayedTotal(currentTotal);
+      prevTotalRef.current = currentTotal;
+      wasHiddenRef.current = false;
+    }
   }, [currentTotal]);
 
   // Called by PaddleNumberDisplay the instant a queued paddle starts entering

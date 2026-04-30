@@ -14,7 +14,8 @@ export default function BidForm({ theme }: BidFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [inputFocused, setInputFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentLevel = settings?.currentDonationLevel;
   const maxDigits = settings?.paddleDigits ?? 3;
@@ -27,7 +28,6 @@ export default function BidForm({ theme }: BidFormProps) {
   // Global keyboard handler to focus input when typing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // If typing and not in another input/textarea, focus the paddle number input
       const target = e.target as HTMLElement;
       const isTyping = /^[a-z0-9]$/i.test(e.key);
       const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
@@ -51,10 +51,10 @@ export default function BidForm({ theme }: BidFormProps) {
       return;
     }
 
-    // Validate paddle number against configured digit limit (exact count required)
-    const digitRegex = new RegExp(`^\\d{${maxDigits}}$`);
+    // Validate paddle number — allow 1 up to maxDigits digits (flexible, no forced leading zeros)
+    const digitRegex = new RegExp(`^\\d{1,${maxDigits}}$`);
     if (!digitRegex.test(paddleNumber.trim())) {
-      setError(`Paddle number must be exactly ${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
+      setError(`Paddle number must be 1–${maxDigits} digit${maxDigits === 1 ? '' : 's'}`);
       return;
     }
 
@@ -82,8 +82,7 @@ export default function BidForm({ theme }: BidFormProps) {
       setPaddleNumber('');
       setCustomAmount('');
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 2000);
-      // Re-focus after successful submission
+      setTimeout(() => setSuccess(false), 600);
       setTimeout(() => inputRef.current?.focus(), 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add bid');
@@ -101,13 +100,17 @@ export default function BidForm({ theme }: BidFormProps) {
     }).format(amount);
   };
 
+  const isDisabled = isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length === 0;
+
   return (
     <div
       style={{
         backgroundColor: theme.colors.cardBg,
-        borderRadius: '8px',
+        borderRadius: '12px',
         padding: '1rem',
         boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+        border: `1px solid ${theme.colors.widgetBorder}`,
+        borderLeft: `3px solid ${theme.colors.blue}`,
         transition: 'background-color 0.2s, box-shadow 0.2s',
       }}
     >
@@ -118,10 +121,11 @@ export default function BidForm({ theme }: BidFormProps) {
       {error && (
         <div
           style={{
-            padding: '0.75rem',
+            padding: '0.625rem 0.875rem',
             backgroundColor: theme.colors.redLight,
             color: theme.colors.redDark,
-            borderRadius: '4px',
+            borderRadius: '6px',
+            borderLeft: `3px solid ${theme.colors.red}`,
             marginBottom: '0.75rem',
             fontSize: '0.875rem',
             transition: 'background-color 0.2s, color 0.2s',
@@ -131,21 +135,6 @@ export default function BidForm({ theme }: BidFormProps) {
         </div>
       )}
 
-      {success && (
-        <div
-          style={{
-            padding: '0.75rem',
-            backgroundColor: theme.colors.greenLight,
-            color: theme.colors.greenDark,
-            borderRadius: '4px',
-            marginBottom: '0.75rem',
-            fontSize: '0.875rem',
-            transition: 'background-color 0.2s, color 0.2s',
-          }}
-        >
-          Bid added successfully!
-        </div>
-      )}
 
       <div role="presentation">
         {/* Current Selected Level Display */}
@@ -153,21 +142,21 @@ export default function BidForm({ theme }: BidFormProps) {
           <div
             style={{
               marginBottom: '1rem',
-              padding: '0.75rem',
+              padding: '0.875rem',
               backgroundColor: currentLevel ? theme.colors.greenLight : theme.colors.cardBorder,
               border: `2px solid ${currentLevel ? theme.colors.green : theme.colors.inputBorder}`,
-              borderRadius: '6px',
+              borderRadius: '8px',
               transition: 'all 0.2s',
             }}
           >
             <div
               style={{
-                fontSize: '0.75rem',
-                fontWeight: '600',
+                fontSize: '0.7rem',
+                fontWeight: '700',
                 color: currentLevel ? theme.colors.greenDark : theme.colors.textSecondary,
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: '0.25rem',
+                letterSpacing: '0.07em',
+                marginBottom: '0.35rem',
                 transition: 'color 0.2s',
               }}
             >
@@ -175,7 +164,7 @@ export default function BidForm({ theme }: BidFormProps) {
             </div>
             <div
               style={{
-                fontSize: '1.75rem',
+                fontSize: '2rem',
                 fontWeight: '900',
                 color: currentLevel ? theme.colors.greenDark : theme.colors.textMuted,
                 lineHeight: '1',
@@ -205,11 +194,7 @@ export default function BidForm({ theme }: BidFormProps) {
               type="checkbox"
               checked={useCustomAmount}
               onChange={(e) => setUseCustomAmount(e.target.checked)}
-              style={{
-                width: '1rem',
-                height: '1rem',
-                cursor: 'pointer',
-              }}
+              style={{ width: '1rem', height: '1rem', cursor: 'pointer' }}
             />
             Use Custom Amount
           </label>
@@ -233,23 +218,27 @@ export default function BidForm({ theme }: BidFormProps) {
                 width: '100%',
                 padding: '0.625rem',
                 border: `1px solid ${theme.colors.inputBorder}`,
-                borderRadius: '4px',
+                borderRadius: '6px',
                 fontSize: '1rem',
                 backgroundColor: theme.colors.inputBg,
                 color: theme.colors.textPrimary,
                 transition: 'all 0.2s',
+                boxSizing: 'border-box',
               }}
             />
           </div>
         )}
 
-        <div style={{ marginBottom: '0.75rem' }}>
+        <div style={{ marginBottom: '0.875rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem', color: theme.colors.textPrimary, transition: 'color 0.2s' }}>
-            Paddle Number * <span style={{ fontWeight: '400', color: theme.colors.textSecondary }}>({maxDigits} digits)</span>
+            Paddle Number *{' '}
+            <span style={{ fontWeight: '400', color: theme.colors.textSecondary }}>
+              (up to {maxDigits} digits)
+            </span>
           </label>
-          <textarea
+          <input
             ref={inputRef}
-            rows={1}
+            type="text"
             inputMode="numeric"
             maxLength={maxDigits}
             value={paddleNumber}
@@ -263,60 +252,57 @@ export default function BidForm({ theme }: BidFormProps) {
                 handleSubmit();
               }
             }}
-            placeholder={`e.g., ${'1'.padStart(maxDigits - 1, '0')}${maxDigits}`}
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
+            placeholder={`e.g., ${maxDigits}`}
             disabled={isSubmitting}
             autoComplete="off"
             autoFocus
             style={{
               width: '100%',
               padding: '0.625rem',
-              border: `1px solid ${paddleNumber.length > 0 && paddleNumber.length < maxDigits ? theme.colors.redDark : theme.colors.inputBorder}`,
-              borderRadius: '4px',
+              border: `1px solid ${success ? theme.colors.green : inputFocused ? theme.colors.blue : theme.colors.inputBorder}`,
+              borderRadius: '6px',
               fontSize: '1rem',
-              backgroundColor: theme.colors.inputBg,
+              backgroundColor: success ? theme.colors.greenLight : theme.colors.inputBg,
               color: theme.colors.textPrimary,
               transition: 'all 0.2s',
-              resize: 'none',
-              overflow: 'hidden',
-              lineHeight: '1.5',
-              fontFamily: 'inherit',
+              boxShadow: success ? `0 0 0 3px ${theme.colors.greenLight}` : inputFocused ? `0 0 0 3px ${theme.colors.blueLighter}` : 'none',
+              outline: 'none',
+              boxSizing: 'border-box',
             }}
           />
-          {paddleNumber.length > 0 && paddleNumber.length < maxDigits && (
-            <p style={{ fontSize: '0.75rem', color: theme.colors.redDark, marginTop: '0.25rem' }}>
-              {maxDigits - paddleNumber.length} more digit{maxDigits - paddleNumber.length === 1 ? '' : 's'} needed
-            </p>
-          )}
         </div>
 
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits}
+          disabled={isDisabled}
           style={{
             width: '100%',
-            padding: '0.75rem',
+            padding: '0.875rem',
             border: 'none',
-            borderRadius: '6px',
-            backgroundColor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? theme.colors.cardBorder : theme.colors.blue,
-            color: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? theme.colors.textMuted : 'white',
-            cursor: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? 'not-allowed' : 'pointer',
+            borderRadius: '8px',
+            background: isDisabled
+              ? theme.colors.cardBorder
+              : `linear-gradient(135deg, ${theme.colors.blue}, ${theme.colors.blueDark})`,
+            color: isDisabled ? theme.colors.textMuted : 'white',
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
             fontSize: '0.9375rem',
-            fontWeight: '600',
-            boxShadow: isSubmitting || (!useCustomAmount && !currentLevel) || paddleNumber.length < maxDigits ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
+            fontWeight: '700',
+            boxShadow: isDisabled ? 'none' : `0 2px 4px ${theme.colors.shadowMd}`,
             transition: 'all 0.2s ease',
-            letterSpacing: '0.025em',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
           }}
           onMouseEnter={(e) => {
-            if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length >= maxDigits) {
-              e.currentTarget.style.backgroundColor = theme.colors.blueDark;
-              e.currentTarget.style.boxShadow = `0 4px 8px ${theme.colors.shadowLg}`;
+            if (!isDisabled) {
+              e.currentTarget.style.boxShadow = `0 4px 12px ${theme.colors.shadowLg}`;
               e.currentTarget.style.transform = 'translateY(-1px)';
             }
           }}
           onMouseLeave={(e) => {
-            if (!isSubmitting && (useCustomAmount || currentLevel) && paddleNumber.length >= maxDigits) {
-              e.currentTarget.style.backgroundColor = theme.colors.blue;
+            if (!isDisabled) {
               e.currentTarget.style.boxShadow = `0 2px 4px ${theme.colors.shadowMd}`;
               e.currentTarget.style.transform = 'translateY(0)';
             }

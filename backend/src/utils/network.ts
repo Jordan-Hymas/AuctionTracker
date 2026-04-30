@@ -1,6 +1,7 @@
 import os from 'os';
 
 const PREFERRED_INTERFACE_PATTERNS = [/^en\d+/i, /^eth\d+/i, /wi-?fi/i, /wlan/i, /ethernet/i];
+const VIRTUAL_INTERFACE_PATTERNS = [/^(vmnet|vboxnet|vbox|utun|tap\d|docker|br-|virbr|tun\d)/i];
 
 const isPrivateIPv4 = (ip: string): boolean => {
   if (ip.startsWith('10.')) return true;
@@ -20,8 +21,10 @@ export function getLanIPv4Addresses(): string[] {
 
     for (const alias of iface) {
       if (alias.family !== 'IPv4' || alias.internal) continue;
+      if (alias.address.startsWith('169.254.')) continue; // skip link-local
       const isPreferredName = PREFERRED_INTERFACE_PATTERNS.some((pattern) => pattern.test(name));
-      const score = (isPrivateIPv4(alias.address) ? 2 : 0) + (isPreferredName ? 1 : 0);
+      const isVirtual = VIRTUAL_INTERFACE_PATTERNS.some((pattern) => pattern.test(name));
+      const score = (isPrivateIPv4(alias.address) ? 2 : 0) + (isPreferredName ? 1 : 0) - (isVirtual ? 2 : 0);
       ranked.push({ ip: alias.address, score });
     }
   }

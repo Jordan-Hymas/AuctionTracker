@@ -22,7 +22,7 @@ export function initializeWebSocket(httpServer: HTTPServer): Server {
     // Send initial state to newly connected client
     try {
       const settings = getSettings();
-      const recentBids = getRecentBids(10);
+      const recentBids = getRecentBids();
       const lastBid = getLastBid();
       const currentTotal = getCurrentTotal();
 
@@ -87,5 +87,14 @@ export function broadcastLogoUpdated(logoUrl: string | null): void {
     io.emit('logo:updated', { logoUrl });
   } else {
     logger.error('Cannot broadcast logo:updated — WebSocket not initialized');
+  }
+}
+
+export function broadcastBidsCleared(newTotal: number): void {
+  if (io) {
+    logger.info('Broadcasting bids:cleared', { newTotal, clients: io.engine.clientsCount });
+    io.emit('bids:cleared', { newTotal });
+  } else {
+    logger.error('Cannot broadcast bids:cleared — WebSocket not initialized');
   }
 }

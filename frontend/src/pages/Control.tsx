@@ -12,9 +12,75 @@ import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
 import ProgressBarThemePanel from '../components/control/ProgressBarThemePanel';
 import { adminApi, NetworkInfo } from '../services/api';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getTheme } from '../config/controlThemes';
 import { useResponsive } from '../hooks/useResponsive';
+import { ControlTheme } from '../types/controlTheme';
+
+function CopyableUrl({ url, theme }: { url: string; theme: ControlTheme }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', minWidth: 0, flex: 1 }}>
+      <span
+        style={{
+          flex: 1,
+          display: 'block',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '0.8rem',
+          color: theme.colors.textPrimary,
+          backgroundColor: theme.colors.pageBg,
+          border: `1px solid ${theme.colors.cardBorder}`,
+          borderRadius: '6px',
+          padding: '0.35rem 0.5rem',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          minWidth: 0,
+        }}
+      >
+        {url}
+      </span>
+      <button
+        onClick={handleCopy}
+        title="Copy to clipboard"
+        style={{
+          flexShrink: 0,
+          padding: '0.3rem 0.55rem',
+          border: `1px solid ${copied ? theme.colors.green : theme.colors.cardBorder}`,
+          borderRadius: '6px',
+          backgroundColor: copied ? theme.colors.greenLight : theme.colors.cardBg,
+          color: copied ? theme.colors.greenDark : theme.colors.textSecondary,
+          cursor: 'pointer',
+          fontSize: '0.7rem',
+          fontWeight: '700',
+          transition: 'all 0.15s',
+          whiteSpace: 'nowrap',
+          letterSpacing: '0.02em',
+        }}
+        onMouseEnter={(e) => {
+          if (!copied) {
+            e.currentTarget.style.borderColor = theme.colors.blue;
+            e.currentTarget.style.color = theme.colors.blue;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!copied) {
+            e.currentTarget.style.borderColor = theme.colors.cardBorder;
+            e.currentTarget.style.color = theme.colors.textSecondary;
+          }
+        }}
+      >
+        {copied ? 'Copied!' : 'Copy'}
+      </button>
+    </div>
+  );
+}
 
 export default function Control() {
   const { currentTotal, goalAmount, startingTotal, isConnected, isLoading, settings } = useAuction();
@@ -22,11 +88,10 @@ export default function Control() {
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
   const [activeTab, setActiveTab] = useState<'setup' | 'live'>('live');
   const [hoveredTab, setHoveredTab] = useState<'setup' | 'live' | null>(null);
-  const [lowerRightRowHeight, setLowerRightRowHeight] = useState<number | null>(null);
   const [showStaleWarning, setShowStaleWarning] = useState(false);
+  const [liveColHeight, setLiveColHeight] = useState<number | null>(null);
   const staleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const settingsPanelRef = useRef<HTMLDivElement>(null);
-  const donationPanelRef = useRef<HTMLDivElement>(null);
+  const liveRightColRef = useRef<HTMLDivElement>(null);
   const theme = getTheme(themeMode);
   const { isMobile, width } = useResponsive();
 
@@ -56,32 +121,6 @@ export default function Control() {
     setThemeMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  useEffect(() => {
-    if (activeTab !== 'setup' || isMobile) {
-      setLowerRightRowHeight(null);
-      return;
-    }
-
-    const measure = () => {
-      const settingsHeight = settingsPanelRef.current?.getBoundingClientRect().height ?? 0;
-      const donationHeight = donationPanelRef.current?.getBoundingClientRect().height ?? 0;
-      const gap = 16; // 1rem
-      const targetRowHeight = Math.max(0, settingsHeight - donationHeight - gap);
-      setLowerRightRowHeight(targetRowHeight > 0 ? targetRowHeight : null);
-    };
-
-    measure();
-
-    const observer = new ResizeObserver(() => measure());
-    if (settingsPanelRef.current) observer.observe(settingsPanelRef.current);
-    if (donationPanelRef.current) observer.observe(donationPanelRef.current);
-
-    window.addEventListener('resize', measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [activeTab, isMobile, settings?.themeName]);
 
   // Show stale-data warning if disconnected for more than 30 seconds
   useEffect(() => {
@@ -98,6 +137,20 @@ export default function Control() {
       if (staleTimerRef.current !== null) clearTimeout(staleTimerRef.current);
     };
   }, [isConnected]);
+
+  useEffect(() => {
+    if (activeTab !== 'live' || isMobile) {
+      setLiveColHeight(null);
+      return;
+    }
+    const el = liveRightColRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setLiveColHeight(el.getBoundingClientRect().height);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeTab, isMobile]);
 
   if (isLoading) {
     return (
@@ -126,18 +179,13 @@ export default function Control() {
     : '';
   const controlAccessUrl = networkInfo ? `http://${accessHost}:${accessPort}/control` : '';
   const mobileAccessUrl = networkInfo ? `http://${accessHost}:${accessPort}/mobile` : '';
+  const displayAccessUrl = networkInfo ? `http://${accessHost}:${accessPort}/` : '';
 
   // Responsive grid templates
   const getStatsGridCols = () => {
     if (width < 760) return '1fr';
     if (width < 1024) return 'repeat(2, minmax(0, 1fr))';
     return 'repeat(3, minmax(0, 1fr))';
-  };
-
-  const getRemoteAccessWidth = () => {
-    if (width < 760) return '100%';
-    if (width < 1280) return 'calc((100% - 0.75rem) / 2)';
-    return 'calc((100% - 1.5rem) / 3)';
   };
 
   return (
@@ -245,99 +293,38 @@ export default function Control() {
               style={{
                 marginBottom: '0.75rem',
                 backgroundColor: theme.colors.cardBg,
-                border: `1px solid ${theme.colors.cardBorder}`,
+                border: `1px solid ${theme.colors.widgetBorder}`,
                 borderRadius: '8px',
-                padding: isMobile ? '0.75rem' : '0.85rem',
+                padding: '0.6rem 0.85rem',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
-                display: 'block',
-                width: getRemoteAccessWidth(),
-                maxWidth: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
                 minWidth: 0,
+                width: '100%',
               }}
             >
-              <div
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  color: theme.colors.textSecondary,
-                  marginBottom: '0.55rem',
-                }}
-              >
-                Remote Access
-              </div>
 
-              <div style={{ display: 'grid', gap: '0.5rem', width: '100%', maxWidth: '100%' }}>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : '64px minmax(0, 1fr)',
-                    alignItems: isMobile ? 'flex-start' : 'center',
-                    gap: '0.4rem',
-                    maxWidth: '100%',
-                    minWidth: 0,
-                  }}
-                >
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.colors.textSecondary }}>
-                    Control
-                  </span>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                      fontSize: '0.8rem',
-                      color: theme.colors.textPrimary,
-                      backgroundColor: theme.colors.pageBg,
-                      border: `1px solid ${theme.colors.cardBorder}`,
-                      borderRadius: '6px',
-                      padding: '0.35rem 0.5rem',
-                      whiteSpace: 'normal',
-                      overflowWrap: 'anywhere',
-                      maxWidth: '100%',
-                      minWidth: 0,
-                    }}
-                  >
-                    {controlAccessUrl}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : '64px minmax(0, 1fr)',
-                    alignItems: isMobile ? 'flex-start' : 'center',
-                    gap: '0.4rem',
-                    maxWidth: '100%',
-                    minWidth: 0,
-                  }}
-                >
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.colors.textSecondary }}>
-                    Mobile
-                  </span>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                      fontSize: '0.8rem',
-                      color: theme.colors.textPrimary,
-                      backgroundColor: theme.colors.pageBg,
-                      border: `1px solid ${theme.colors.cardBorder}`,
-                      borderRadius: '6px',
-                      padding: '0.35rem 0.5rem',
-                      whiteSpace: 'normal',
-                      overflowWrap: 'anywhere',
-                      maxWidth: '100%',
-                      minWidth: 0,
-                    }}
-                  >
-                    {mobileAccessUrl}
-                  </span>
-                </div>
-              </div>
+              {[
+                { label: 'Control', url: controlAccessUrl },
+                { label: 'Mobile',  url: mobileAccessUrl },
+                { label: 'Display', url: displayAccessUrl },
+              ].map(({ label, url }, i, arr) => (
+                <React.Fragment key={label}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: theme.colors.textSecondary, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {label}
+                    </span>
+                    <CopyableUrl url={url} theme={theme} />
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: theme.colors.cardBorder, flexShrink: 0 }} />
+                  )}
+                </React.Fragment>
+              ))}
 
               {networkInfo.warning && (
-                <span style={{ display: 'block', marginTop: '0.35rem', color: theme.colors.red }}>
+                <span style={{ color: theme.colors.red, fontSize: '0.7rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {networkInfo.warning}
                 </span>
               )}
@@ -356,19 +343,22 @@ export default function Control() {
               style={{
                 backgroundColor: theme.colors.cardBg,
                 padding: '0.65rem',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+                border: `1px solid ${theme.colors.widgetBorder}`,
+                borderLeft: `3px solid ${theme.colors.blue}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
                 minWidth: 0,
               }}
             >
               <div
                 style={{
-                  fontSize: '0.75rem',
-                  color: theme.colors.textPrimary,
+                  fontSize: '0.7rem',
+                  fontWeight: '700',
+                  color: theme.colors.textSecondary,
                   marginBottom: '0.3rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.07em',
                   transition: 'color 0.2s',
                 }}
               >
@@ -390,19 +380,22 @@ export default function Control() {
               style={{
                 backgroundColor: theme.colors.cardBg,
                 padding: '0.65rem',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+                border: `1px solid ${theme.colors.widgetBorder}`,
+                borderLeft: `3px solid ${theme.colors.green}`,
                 transition: 'background-color 0.2s, box-shadow 0.2s',
                 minWidth: 0,
               }}
             >
               <div
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
+                  fontWeight: '700',
                   color: theme.colors.textSecondary,
                   marginBottom: '0.3rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.07em',
                   transition: 'color 0.2s',
                 }}
               >
@@ -425,8 +418,10 @@ export default function Control() {
                 style={{
                   backgroundColor: theme.colors.cardBg,
                   padding: '0.65rem',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+                  border: `1px solid ${theme.colors.widgetBorder}`,
+                  borderLeft: `3px solid ${theme.colors.purple}`,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -436,11 +431,12 @@ export default function Control() {
               >
                 <div
                   style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
+                    fontWeight: '700',
                     color: theme.colors.textSecondary,
                     marginBottom: '0.3rem',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.07em',
                     transition: 'color 0.2s',
                   }}
                 >
@@ -489,8 +485,9 @@ export default function Control() {
             marginBottom: '1rem',
             backgroundColor: theme.colors.cardBg,
             padding: '0.375rem',
-            borderRadius: '10px',
+            borderRadius: '12px',
             boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+            border: `1px solid ${theme.colors.widgetBorder}`,
             transition: 'background-color 0.2s, box-shadow 0.2s',
           }}
         >
@@ -504,8 +501,8 @@ export default function Control() {
               fontSize: '0.9375rem',
               fontWeight: '700',
               color: activeTab === 'setup' ? '#ffffff' : theme.colors.textSecondary,
-              backgroundColor: activeTab === 'setup'
-                ? theme.colors.blue
+              background: activeTab === 'setup'
+                ? `linear-gradient(135deg, ${theme.colors.blue}, ${theme.colors.blueDark})`
                 : hoveredTab === 'setup'
                   ? theme.colors.hover
                   : 'transparent',
@@ -513,8 +510,8 @@ export default function Control() {
               borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: activeTab === 'setup' ? `0 2px 6px ${theme.colors.shadowMd}` : 'none',
-              letterSpacing: '0.02em',
+              boxShadow: activeTab === 'setup' ? `0 2px 8px ${theme.colors.shadowMd}` : 'none',
+              letterSpacing: '0.03em',
             }}
           >
             Setup
@@ -529,8 +526,8 @@ export default function Control() {
               fontSize: '0.9375rem',
               fontWeight: '700',
               color: activeTab === 'live' ? '#ffffff' : theme.colors.textSecondary,
-              backgroundColor: activeTab === 'live'
-                ? theme.colors.blue
+              background: activeTab === 'live'
+                ? `linear-gradient(135deg, ${theme.colors.blue}, ${theme.colors.blueDark})`
                 : hoveredTab === 'live'
                   ? theme.colors.hover
                   : 'transparent',
@@ -538,8 +535,8 @@ export default function Control() {
               borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: activeTab === 'live' ? `0 2px 6px ${theme.colors.shadowMd}` : 'none',
-              letterSpacing: '0.02em',
+              boxShadow: activeTab === 'live' ? `0 2px 8px ${theme.colors.shadowMd}` : 'none',
+              letterSpacing: '0.03em',
             }}
           >
             Live Event
@@ -576,29 +573,18 @@ export default function Control() {
             >
               {/* Left Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div ref={settingsPanelRef}>
-                  <SettingsPanel theme={theme} />
-                </div>
+                <SettingsPanel theme={theme} />
                 {settings?.themeName === 'custom' && <CustomThemePanel theme={theme} />}
               </div>
 
               {/* Right Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div ref={donationPanelRef}>
-                  <DonationLevelsPanel theme={theme} />
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    gap: '0.75rem',
-                    height: lowerRightRowHeight ? `${lowerRightRowHeight}px` : undefined,
-                  }}
-                >
-                  <div style={{ flex: '1 1 0', display: 'flex', minWidth: 0 }}>
+                <DonationLevelsPanel theme={theme} />
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div style={{ flex: '1 1 0', minWidth: 0 }}>
                     <LogoUploader theme={theme} />
                   </div>
-                  <div style={{ flex: '1 1 0', display: 'flex', minWidth: 0 }}>
+                  <div style={{ flex: '1 1 0', minWidth: 0 }}>
                     <ProgressBarThemePanel theme={theme} />
                   </div>
                 </div>
@@ -615,14 +601,21 @@ export default function Control() {
               alignItems: 'flex-start',
             }}
           >
-            {/* Left Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Left Column — height locked to right column via ResizeObserver */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              height: liveColHeight ? `${liveColHeight}px` : undefined,
+              minHeight: 0,
+              overflow: 'hidden',
+            }}>
               <BidForm theme={theme} />
               <BidHistory theme={theme} />
             </div>
 
             {/* Right Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div ref={liveRightColRef} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <CurrentLevelSelector theme={theme} />
               <GoalReachedPanel theme={theme} />
               <ExportButton theme={theme} />
@@ -635,8 +628,9 @@ export default function Control() {
           style={{
             backgroundColor: theme.colors.cardBg,
             padding: '0.6rem 1rem',
-            borderRadius: '8px',
+            borderRadius: '12px',
             boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+            border: `1px solid ${theme.colors.widgetBorder}`,
             display: 'flex',
             gap: '0.75rem',
             justifyContent: 'flex-end',
@@ -646,6 +640,36 @@ export default function Control() {
           }}
         >
           <ResetButton theme={theme} />
+          {window.desktop?.isElectron && window.desktop?.reopenDisplayWindow && (
+            <button
+              onClick={() => window.desktop!.reopenDisplayWindow!()}
+              style={{
+                padding: '0.625rem 1.25rem',
+                border: `1px solid ${theme.colors.cardBorder}`,
+                borderRadius: '6px',
+                backgroundColor: theme.colors.cardBg,
+                color: theme.colors.textSecondary,
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                boxShadow: `0 1px 2px ${theme.colors.shadow}`,
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.01em',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.colors.hover;
+                e.currentTarget.style.color = theme.colors.textPrimary;
+                e.currentTarget.style.borderColor = theme.colors.blue;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.colors.cardBg;
+                e.currentTarget.style.color = theme.colors.textSecondary;
+                e.currentTarget.style.borderColor = theme.colors.cardBorder;
+              }}
+            >
+              Reopen Display
+            </button>
+          )}
           <a
             href="/mobile"
             target="_blank"

@@ -1,3 +1,5 @@
+import { ControlTheme } from '../../types/controlTheme';
+
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
@@ -7,6 +9,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   danger?: boolean;
+  theme: ControlTheme;
 }
 
 export default function ConfirmDialog({
@@ -18,6 +21,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
   danger = false,
+  theme,
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
@@ -29,7 +33,8 @@ export default function ConfirmDialog({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        backdropFilter: 'blur(4px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -39,27 +44,41 @@ export default function ConfirmDialog({
     >
       <div
         style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
+          backgroundColor: theme.colors.cardBg,
+          borderRadius: '12px',
           padding: '2rem',
-          maxWidth: '400px',
+          maxWidth: '420px',
           width: '90%',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          boxShadow: `0 8px 32px ${theme.colors.shadowLg}`,
+          borderTop: danger ? '3px solid #dc2626' : `3px solid ${theme.colors.blue}`,
+          border: `1px solid ${theme.colors.cardBorder}`,
+          borderTopColor: danger ? '#dc2626' : theme.colors.blue,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: '600' }}>{title}</h2>
-        <p style={{ marginBottom: '2rem', color: '#4b5563', lineHeight: '1.5' }}>{message}</p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+        <h2 style={{ marginBottom: '0.875rem', fontSize: '1.25rem', fontWeight: '700', color: theme.colors.textPrimary }}>{title}</h2>
+        <p style={{ marginBottom: '2rem', color: theme.colors.textSecondary, lineHeight: '1.6', fontSize: '0.9375rem' }}>{message}</p>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button
             onClick={onCancel}
             style={{
-              padding: '0.5rem 1.5rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '4px',
-              backgroundColor: 'white',
+              padding: '0.5rem 1.25rem',
+              border: `1px solid ${theme.colors.cardBorder}`,
+              borderRadius: '8px',
+              backgroundColor: theme.colors.cardBg,
+              color: theme.colors.textSecondary,
               cursor: 'pointer',
-              fontSize: '1rem',
+              fontSize: '0.9375rem',
+              fontWeight: '500',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = theme.colors.hover;
+              e.currentTarget.style.color = theme.colors.textPrimary;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = theme.colors.cardBg;
+              e.currentTarget.style.color = theme.colors.textSecondary;
             }}
           >
             {cancelText}
@@ -67,14 +86,26 @@ export default function ConfirmDialog({
           <button
             onClick={onConfirm}
             style={{
-              padding: '0.5rem 1.5rem',
+              padding: '0.5rem 1.25rem',
               border: 'none',
-              borderRadius: '4px',
-              backgroundColor: danger ? '#dc2626' : '#2563eb',
+              borderRadius: '8px',
+              background: danger
+                ? 'linear-gradient(135deg, #dc2626, #991b1b)'
+                : `linear-gradient(135deg, ${theme.colors.blue}, ${theme.colors.blueDark})`,
               color: 'white',
               cursor: 'pointer',
-              fontSize: '1rem',
-              fontWeight: '500',
+              fontSize: '0.9375rem',
+              fontWeight: '600',
+              transition: 'all 0.15s',
+              boxShadow: `0 2px 6px ${theme.colors.shadowMd}`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = `0 4px 12px ${theme.colors.shadowLg}`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = `0 2px 6px ${theme.colors.shadowMd}`;
             }}
           >
             {confirmText}

@@ -73,6 +73,7 @@ export default function ResetButton({ theme }: ResetButtonProps) {
         onConfirm={handleConfirm}
         onCancel={() => setIsOpen(false)}
         danger={true}
+        theme={theme}
       />
     </>
   );

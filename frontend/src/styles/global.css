@@ -24,3 +24,10 @@ code {
 #root {
   min-height: 100vh;
 }
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}

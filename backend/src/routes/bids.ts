@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { BidService } from '../services/BidService';
 import { getBidCount } from '../database/queries';
-import { broadcastBidAdded, broadcastBidUndone } from '../websocket';
+import { broadcastBidAdded, broadcastBidUndone, broadcastBidsCleared } from '../websocket';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -57,6 +57,41 @@ router.delete('/last', async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/v1/bids/all - Clear all bids
+router.delete('/all', async (req: Request, res: Response) => {
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({ error: 'Send { confirm: true } to confirm' });
+  }
+  try {
+    const { newTotal } = await BidService.clearAllBids();
+    broadcastBidsCleared(newTotal);
+    res.json({ success: true, newTotal });
+  } catch (error) {
+    logger.error('Error clearing all bids', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to clear bids'
+    });
+  }
+});
+
+// DELETE /api/v1/bids/:id - Delete specific bid by ID
+router.delete('/:id', async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id) || id < 1) {
+    return res.status(400).json({ error: 'Invalid bid ID' });
+  }
+  try {
+    const { removedBid, newTotal } = await BidService.deleteBidById(id);
+    const totalBids = getBidCount();
+    broadcastBidUndone(removedBid, newTotal, totalBids);
+    res.json({ removedBid, newTotal, totalBids });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Failed to delete bid';
+    const status = msg.includes('not found') ? 404 : 500;
+    res.status(status).json({ error: msg });
+  }
+});
+
 // GET /api/v1/bids - Get all bids
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -73,8 +108,7 @@ router.get('/', async (req: Request, res: Response) => {
 // GET /api/v1/bids/recent - Get recent bids
 router.get('/recent', async (req: Request, res: Response) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const bids = await BidService.getRecentBids(limit);
+    const bids = await BidService.getRecentBids();
     res.json({ bids });
   } catch (error) {
     logger.error('Error fetching recent bids', error);

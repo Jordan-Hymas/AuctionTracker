@@ -7,6 +7,7 @@ export interface ControlTheme {
     pageBg: string;
     cardBg: string;
     cardBorder: string;
+    widgetBorder: string;
 
     // Text
     textPrimary: string;
@@ -37,5 +38,7 @@ export interface ControlTheme {
     shadowMd: string;
     shadowLg: string;
     hover: string;
+    accent: string;
+    cardBgHover: string;
   };
 }

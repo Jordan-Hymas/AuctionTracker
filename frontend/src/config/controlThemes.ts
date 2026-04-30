@@ -6,18 +6,19 @@ export const lightTheme: ControlTheme = {
     // Backgrounds
     pageBg: '#f8fafc',
     cardBg: '#ffffff',
-    cardBorder: '#e2e8f0',
+    cardBorder: '#e8ecf0',
+    widgetBorder: '#94a3b8',
 
     // Text
     textPrimary: '#0f172a',
     textSecondary: '#64748b',
     textMuted: '#94a3b8',
 
-    // Brand colors - blue (Professional slate-blue)
-    blue: '#475569',
-    blueLight: '#64748b',
-    blueLighter: '#f1f5f9',
-    blueDark: '#334155',
+    // Brand colors - blue (CTA blue)
+    blue: '#2563eb',
+    blueLight: '#3b82f6',
+    blueLighter: '#eff6ff',
+    blueDark: '#1d4ed8',
 
     // Brand colors - green (Muted teal/forest)
     green: '#0f766e',
@@ -39,10 +40,12 @@ export const lightTheme: ControlTheme = {
     // UI elements
     inputBorder: '#cbd5e1',
     inputBg: '#ffffff',
-    shadow: 'rgba(15, 23, 42, 0.08)',
-    shadowMd: 'rgba(15, 23, 42, 0.12)',
+    shadow: 'rgba(15, 23, 42, 0.06)',
+    shadowMd: 'rgba(15, 23, 42, 0.10)',
     shadowLg: 'rgba(15, 23, 42, 0.16)',
-    hover: '#f8fafc',
+    hover: '#f1f5f9',
+    accent: '#2563eb',
+    cardBgHover: '#f8fafc',
   },
 };
 
@@ -50,20 +53,21 @@ export const darkTheme: ControlTheme = {
   mode: 'dark',
   colors: {
     // Backgrounds
-    pageBg: '#0f172a',
-    cardBg: '#1e293b',
-    cardBorder: '#334155',
+    pageBg: '#0d1117',
+    cardBg: '#161b22',
+    cardBorder: '#21262d',
+    widgetBorder: '#3d444d',
 
     // Text
-    textPrimary: '#f1f5f9',
-    textSecondary: '#cbd5e1',
-    textMuted: '#64748b',
+    textPrimary: '#e6edf3',
+    textSecondary: '#8b949e',
+    textMuted: '#484f58',
 
-    // Brand colors - blue (Professional slate-blue)
-    blue: '#64748b',
-    blueLight: '#94a3b8',
-    blueLighter: 'rgba(100, 116, 139, 0.1)',
-    blueDark: '#475569',
+    // Brand colors - blue (Bright readable CTA blue)
+    blue: '#388bfd',
+    blueLight: '#58a6ff',
+    blueLighter: 'rgba(56, 139, 253, 0.1)',
+    blueDark: '#1f6feb',
 
     // Brand colors - green (Muted teal/forest)
     green: '#14b8a6',
@@ -83,12 +87,14 @@ export const darkTheme: ControlTheme = {
     redLighter: 'rgba(220, 38, 38, 0.1)',
 
     // UI elements
-    inputBorder: '#475569',
-    inputBg: '#334155',
-    shadow: 'rgba(0, 0, 0, 0.3)',
-    shadowMd: 'rgba(0, 0, 0, 0.4)',
-    shadowLg: 'rgba(0, 0, 0, 0.5)',
-    hover: '#293548',
+    inputBorder: '#30363d',
+    inputBg: '#0d1117',
+    shadow: 'rgba(1, 4, 9, 0.4)',
+    shadowMd: 'rgba(1, 4, 9, 0.5)',
+    shadowLg: 'rgba(1, 4, 9, 0.6)',
+    hover: '#1c2128',
+    accent: '#388bfd',
+    cardBgHover: '#1c2128',
   },
 };
 

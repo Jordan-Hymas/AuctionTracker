@@ -47,6 +47,16 @@ export const bidApi = {
     const response = await api.delete('/bids/last');
     return response.data;
   },
+
+  deleteById: async (id: number): Promise<{ removedBid: Bid; newTotal: number; totalBids: number }> => {
+    const response = await api.delete(`/bids/${id}`);
+    return response.data;
+  },
+
+  clearAll: async (): Promise<{ newTotal: number }> => {
+    const response = await api.delete('/bids/all', { data: { confirm: true } });
+    return response.data;
+  },
 };
 
 // ==================== SETTINGS API ====================

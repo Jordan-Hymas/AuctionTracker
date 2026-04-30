@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, nativeImage } = require('electron');
+const { app, BrowserWindow, dialog, nativeImage, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -348,6 +348,17 @@ app.whenReady().then(async () => {
 
     await createDisplayWindow(`${runtimeBaseUrl}/`);
     await createControlWindow(`${runtimeBaseUrl}/control`);
+
+    // IPC: allow control panel to reopen the display window if it was closed
+    ipcMain.handle('reopen-display-window', async () => {
+      if (displayWindow && !displayWindow.isDestroyed()) {
+        if (displayWindow.isMinimized()) displayWindow.restore();
+        displayWindow.show();
+        displayWindow.focus();
+        return;
+      }
+      await createDisplayWindow(`${runtimeBaseUrl}/`);
+    });
   } catch (error) {
     dialog.showErrorBox(
       'AuctionTracker Startup Error',
