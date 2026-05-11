@@ -38,20 +38,24 @@ router.post('/logo', uploadMiddleware.single('logo'), async (req: Request, res: 
       return res.json({ logoUrl });
     }
 
-    // Optimize image with Sharp
+    // Optimize image with Sharp.
+    // Read to buffer first so sharp never holds the original file open —
+    // on Windows, toFile() keeps a file handle open past the resolved promise,
+    // causing EBUSY when we try to delete the original immediately after.
     const optimizedFilename = `optimized-${filename.replace(ext, '.webp')}`;
     const optimizedPath = path.join(path.dirname(uploadPath), optimizedFilename);
 
-    await sharp(uploadPath)
+    const inputBuffer = await fs.promises.readFile(uploadPath);
+    const outputBuffer = await sharp(inputBuffer)
       .resize(800, 400, {
         fit: 'inside',
         withoutEnlargement: true,
       })
       .webp({ quality: 85 })
-      .toFile(optimizedPath);
+      .toBuffer();
 
-    // Delete original, rename optimized
-    fs.unlinkSync(uploadPath);
+    await fs.promises.writeFile(optimizedPath, outputBuffer);
+    await fs.promises.unlink(uploadPath);
 
     const logoUrl = `/uploads/${optimizedFilename}`;
     await SettingsService.updateLogo(logoUrl);
@@ -63,10 +67,12 @@ router.post('/logo', uploadMiddleware.single('logo'), async (req: Request, res: 
   } catch (error) {
     logger.error('Logo upload error', error);
 
-    // Clean up uploaded file if it exists
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    // Clean up uploaded file if it exists — ignore errors (e.g. EBUSY on Windows)
+    try {
+      if (req.file && fs.existsSync(req.file.path)) {
+        await fs.promises.unlink(req.file.path);
+      }
+    } catch (_) {}
 
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to upload logo'
@@ -134,16 +140,17 @@ router.post('/background', backgroundUploadMiddleware.single('background'), asyn
     const optimizedFilename = `optimized-${filename.replace(ext, '.webp')}`;
     const optimizedPath = path.join(path.dirname(uploadPath), optimizedFilename);
 
-    await sharp(uploadPath)
+    const inputBuffer = await fs.promises.readFile(uploadPath);
+    const outputBuffer = await sharp(inputBuffer)
       .resize(3840, 2160, {
         fit: 'inside',
         withoutEnlargement: true,
       })
       .webp({ quality: 90 })
-      .toFile(optimizedPath);
+      .toBuffer();
 
-    // Delete original
-    fs.unlinkSync(uploadPath);
+    await fs.promises.writeFile(optimizedPath, outputBuffer);
+    await fs.promises.unlink(uploadPath);
 
     const backgroundUrl = `/uploads/${optimizedFilename}`;
     const settings = await SettingsService.updateSettings({ customBackgroundPath: backgroundUrl });
@@ -154,9 +161,11 @@ router.post('/background', backgroundUploadMiddleware.single('background'), asyn
   } catch (error) {
     logger.error('Background upload error', error);
 
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    try {
+      if (req.file && fs.existsSync(req.file.path)) {
+        await fs.promises.unlink(req.file.path);
+      }
+    } catch (_) {}
 
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to upload background'
@@ -222,16 +231,17 @@ router.post('/goal-reached-background', backgroundUploadMiddleware.single('backg
     const optimizedFilename = `optimized-${filename.replace(ext, '.webp')}`;
     const optimizedPath = path.join(path.dirname(uploadPath), optimizedFilename);
 
-    await sharp(uploadPath)
+    const inputBuffer = await fs.promises.readFile(uploadPath);
+    const outputBuffer = await sharp(inputBuffer)
       .resize(3840, 2160, {
         fit: 'inside',
         withoutEnlargement: true,
       })
       .webp({ quality: 90 })
-      .toFile(optimizedPath);
+      .toBuffer();
 
-    // Delete original
-    fs.unlinkSync(uploadPath);
+    await fs.promises.writeFile(optimizedPath, outputBuffer);
+    await fs.promises.unlink(uploadPath);
 
     const goalReachedBackgroundUrl = `/uploads/${optimizedFilename}`;
     const settings = await SettingsService.updateSettings({ goalReachedBackgroundPath: goalReachedBackgroundUrl });
@@ -242,9 +252,11 @@ router.post('/goal-reached-background', backgroundUploadMiddleware.single('backg
   } catch (error) {
     logger.error('Goal reached background upload error', error);
 
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    try {
+      if (req.file && fs.existsSync(req.file.path)) {
+        await fs.promises.unlink(req.file.path);
+      }
+    } catch (_) {}
 
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to upload goal reached background'
