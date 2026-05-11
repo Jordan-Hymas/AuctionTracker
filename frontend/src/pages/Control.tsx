@@ -12,7 +12,7 @@ import GoalReachedPanel from '../components/control/GoalReachedPanel';
 import ThemeToggle from '../components/control/ThemeToggle';
 import ProgressBarThemePanel from '../components/control/ProgressBarThemePanel';
 import { adminApi, NetworkInfo } from '../services/api';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { getTheme } from '../config/controlThemes';
 import { useResponsive } from '../hooks/useResponsive';
 import { ControlTheme } from '../types/controlTheme';
@@ -138,19 +138,23 @@ export default function Control() {
     };
   }, [isConnected]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (activeTab !== 'live' || isMobile) {
       setLiveColHeight(null);
       return;
     }
     const el = liveRightColRef.current;
+    // el is null while isLoading is true (loading screen is rendered instead).
+    // This effect re-runs when isLoading flips false, at which point el is attached.
     if (!el) return;
+    const initial = el.getBoundingClientRect().height;
+    if (initial > 0) setLiveColHeight(initial);
     const observer = new ResizeObserver(() => {
       setLiveColHeight(el.getBoundingClientRect().height);
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [activeTab, isMobile]);
+  }, [activeTab, isMobile, isLoading]);
 
   if (isLoading) {
     return (
